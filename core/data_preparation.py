@@ -4,7 +4,7 @@ import os
 import numpy as np
 import logging
 
-from data_preprocessing import normalize_data
+from data_preprocessing import data_preprocessing
 
 
 def prepare_data(cfg):
@@ -41,15 +41,3 @@ def load_data(split_path):
     """ Loads data from the actual .csv files """
     data = np.loadtxt(split_path, delimiter=',', skiprows=1, converters={1: lambda x: int(x == 's'.encode('utf-8'))})
     return data[:, 0], data[:, 1], data[:, 2:]
-
-
-def data_preprocessing(train_data, test_data):
-    """ Data preprocessing, including feature engineering and normalization """
-    logging.info(f'Starting data preprocessing!')
-
-    # data cleaning and feature engineering
-    # TODO: Inspect if any redundant features can be removed and do some feature engineering
-
-    # normalize train/test data
-    train_data["x_train"], mean_train, std_train = normalize_data(train_data["x_train"])
-    test_data["x_test"], _, _ = normalize_data(test_data["x_test"], mean_train, std_train)
