@@ -1,4 +1,4 @@
-""" Loads data from the .csv files """
+""" Main logic fot the data preparation """
 
 import os
 import numpy as np
@@ -6,7 +6,7 @@ import logging
 
 
 def prepare_data(cfg):
-    """ Main logic to preprocess the data """
+    """ Loads and preprocesses the data """
     logging.info(f'Data preparation has started!')
     data = dataloader(cfg.dataset_dir)
 
