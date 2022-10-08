@@ -18,6 +18,7 @@ def makepath(desired_path, isfile=False):
             os.makedirs(desired_path)
     return desired_path
 
+
 def makelogger(log_dir=None, mode='w'):
     """ Initializes and configures the logger """
     logger = logging.getLogger()

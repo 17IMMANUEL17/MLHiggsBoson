@@ -16,6 +16,7 @@ def prepare_data(cfg):
 
     # preprocess the data
     data_preprocessing(train_data, test_data)
+    return train_data, test_data
 
 
 def dataloader(data_path):
