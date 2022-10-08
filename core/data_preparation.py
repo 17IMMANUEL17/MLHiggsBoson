@@ -1,4 +1,4 @@
-""" Main logic fot the data preparation """
+""" Main logic for the data preparation """
 
 import os
 import numpy as np
