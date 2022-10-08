@@ -47,4 +47,5 @@ if __name__ == '__main__':
     }
 
     config = Config(default_cfg_path=default_cfg_path, **config)
+    config.write_cfg(os.path.join(config.work_dir, "config.yaml"))
     run_higgs(config)
