@@ -22,7 +22,7 @@ if __name__ == '__main__':
                         help='Path to the folder with data')
     parser.add_argument('--work-dir', required=True, type=str,
                         help='Path to the working directory where the results will be saved')
-    parser.add_argument('--expr-ID', default='V01', type=str,
+    parser.add_argument('--expr-ID', default='V00', type=str,
                         help='Training ID')
 
     cwd = os.getcwd()
