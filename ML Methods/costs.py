@@ -17,7 +17,6 @@ def calculate_mae(e):
 
 def compute_loss(y, tx, w):
     """Calculate the loss.
-    You can calculate the loss using mse or mae.
     """
     e = y - tx.dot(w)
     return calculate_mse(e)
