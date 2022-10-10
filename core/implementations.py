@@ -1,6 +1,9 @@
+
 import numpy as np
-from helpers import batch_iter
-import costs
+from costs import calculate_mse, compute_loss
+from tools.helpers import batch_iter
+
+
 
 
 def compute_gradient(y, tx, w):
@@ -37,7 +40,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     for n_iter in range(max_iters):
         # compute loss, gradient
         grad, err = compute_gradient(y, tx, w)
-        loss = costs.calculate_mse(err)
+        loss = calculate_mse(err)
         # gradient w by descent update
         w = w - gamma * grad
         # store w and loss
@@ -73,7 +76,7 @@ def least_squares_SGD(
             # update w through the stochastic gradient update
             w = w - gamma * grad
             # calculate loss
-            loss = costs.compute_loss(y, tx, w)
+            loss = compute_loss(y, tx, w)
             # store w and loss
             ws.append(w)
             losses.append(loss)
@@ -99,7 +102,7 @@ def least_squares(y, tx):
     A = tx.T.dot(tx)
     b = tx.T.dot(y)
     w = np.linalg.solve(A, b)
-    mse = costs.compute_loss(y, tx, w)
+    mse = compute_loss(y, tx, w)
     return w, mse
 
 def ridge_regression(y, tx, lambda_):
@@ -119,3 +122,4 @@ def ridge_regression(y, tx, lambda_):
     A = tx.T.dot(tx) + aI
     b = tx.T.dot(y)
     return np.linalg.solve(A, b)
+batch_iter(1, 1, 1, num_batches=1)
