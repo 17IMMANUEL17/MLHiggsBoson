@@ -4,7 +4,7 @@ import os
 import numpy as np
 import logging
 
-from data_preprocessing import data_preprocessing
+from data_preprocessing import preprocess_data
 
 
 def prepare_data(cfg):
@@ -15,7 +15,7 @@ def prepare_data(cfg):
     train_data, test_data = dataloader(cfg.dataset_dir)
 
     # preprocess the data
-    data_preprocessing(train_data, test_data)
+    preprocess_data(train_data, test_data)
     return train_data, test_data
 
 

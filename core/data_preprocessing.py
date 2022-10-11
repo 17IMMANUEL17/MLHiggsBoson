@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 
-def data_preprocessing(train_data, test_data):
+def preprocess_data(train_data, test_data):
     """ Data preprocessing, including feature engineering and normalization """
     logging.info(f'Starting data preprocessing!')
 
