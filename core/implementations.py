@@ -21,8 +21,6 @@ def compute_gradient(y, tx, w):
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
-    """Gradient descent algorithm."""
-    # Define parameters to store w and loss
     """The Gradient Descent (GD) algorithm.
        Args:
            y: numpy array of shape (N,), N is the number of samples.
@@ -51,10 +49,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     return losses, ws
 
 
-def least_squares_SGD(
-        y, tx, initial_w, max_iters, gamma):
-    """Stochastic gradient descent."""
-    # Define parameters to store w and loss
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
     Args:
         y: numpy array of shape (N,), N is the number of samples.
@@ -96,8 +91,6 @@ def least_squares(y, tx):
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
         mse: scalar.
-
-
     """
     A = tx.T.dot(tx)
     b = tx.T.dot(y)
@@ -116,8 +109,6 @@ def ridge_regression(y, tx, lambda_):
 
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
-
-
     """
     aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     A = tx.T.dot(tx) + aI
