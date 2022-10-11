@@ -8,7 +8,7 @@ For more information visit [the project website](https://www.aicrowd.com/challen
 1. `git clone https://github.com/17IMMANUEL17/MLproject1.git`
 2. Download the dataset files manually from the [course website](https://www.aicrowd.com/challenges/epfl-machine-learning-higgs/dataset_files)
 3. Install the project requirements: `pip install -r requirements.txt`
-4. Run the code: `python run_higgs.py --data-path <your data path> --work-dir <your desired result directory>`
+4. Run the code: `python run.py --data-path <your data path> --work-dir <your desired result directory>`
 
 ## Team:
 * Antonino Scurria
