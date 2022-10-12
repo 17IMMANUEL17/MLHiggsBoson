@@ -1,9 +1,9 @@
+""" Implementation of the Machine Learning methods """
 
+import logging
 import numpy as np
 from costs import calculate_mse, compute_loss
 from tools.helpers import batch_iter
-
-
 
 
 def compute_gradient(y, tx, w):
@@ -21,8 +21,6 @@ def compute_gradient(y, tx, w):
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
-    """Gradient descent algorithm."""
-    # Define parameters to store w and loss
     """The Gradient Descent (GD) algorithm.
        Args:
            y: numpy array of shape (N,), N is the number of samples.
@@ -46,16 +44,12 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        print("Gradient Descent({bi}/{ti}): loss={l}, w0={w0}, w1={w1}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
+        logging.info("Gradient Descent({bi}/{ti}): loss={l}, w0={w0}, w1={w1}".format(
+            bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
     return losses, ws
 
 
-
-def least_squares_SGD(
-        y, tx, initial_w, max_iters, gamma):
-    """Stochastic gradient descent."""
-    # Define parameters to store w and loss
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """Compute a stochastic gradient at w from just few examples n and their corresponding y_n labels.
     Args:
         y: numpy array of shape (N,), N is the number of samples.
@@ -81,9 +75,10 @@ def least_squares_SGD(
             ws.append(w)
             losses.append(loss)
 
-        print("SGD({bi}/{ti}): loss={l}, w0={w0}, w1={w1}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
+        logging.info("SGD({bi}/{ti}): loss={l}, w0={w0}, w1={w1}".format(
+            bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]))
     return losses, ws
+
 
 def least_squares(y, tx):
     """Calculate the least squares solution.
@@ -96,14 +91,13 @@ def least_squares(y, tx):
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
         mse: scalar.
-
-
     """
     A = tx.T.dot(tx)
     b = tx.T.dot(y)
     w = np.linalg.solve(A, b)
     mse = compute_loss(y, tx, w)
     return w, mse
+
 
 def ridge_regression(y, tx, lambda_):
     """implement ridge regression.
@@ -115,11 +109,8 @@ def ridge_regression(y, tx, lambda_):
 
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
-
-
     """
     aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     A = tx.T.dot(tx) + aI
     b = tx.T.dot(y)
     return np.linalg.solve(A, b)
-batch_iter(1, 1, 1, num_batches=1)
