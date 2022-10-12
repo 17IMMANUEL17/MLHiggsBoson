@@ -1,7 +1,6 @@
 """ Functions that apply initial processing of data """
 
 import logging
-
 import numpy as np
 
 

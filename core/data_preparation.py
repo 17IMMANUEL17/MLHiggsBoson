@@ -4,7 +4,7 @@ import os
 import numpy as np
 import logging
 
-from data_preprocessing import preprocess_data
+from core.data_preprocessing import preprocess_data
 
 
 def prepare_data(cfg):

@@ -3,7 +3,8 @@
 import logging
 import numpy as np
 
-from costs import *
+from core.costs import calculate_mae, calculate_mse, compute_loss,\
+                        sigmoid, log_likelihood_loss 
 from tools.helpers import batch_iter
 
 
