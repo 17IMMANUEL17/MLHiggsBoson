@@ -3,7 +3,9 @@
 import logging
 import numpy as np
 from datetime import datetime
-from implementations import least_squares_GD
+
+from core.implementations import least_squares_GD,\
+        logistic_regression, reg_logistic_regression
 
 
 def run_training(cfg, train_data, test_data):
@@ -43,7 +45,8 @@ def train(cfg, trial_hyperparams, model_name, w_initial, x_train, y_train):
     logging.info(f'Training the model: {model_name} - started training at {start_time} for {cfg.n_epochs} epochs\n')
 
     # TODO: Implement intelligent model selection based on the given model name
-    model = least_squares_GD
+    # model = least_squares_GD
+    model = logistic_regression
 
     # train the model
     ws, losses = model(y=y_train,
