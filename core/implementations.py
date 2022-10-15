@@ -80,6 +80,7 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     Returns:
         An array of shape (D, ) (same shape as w), containing the stochastic gradient of the loss at w.
     """
+    # TODO: Fix this implementation (most likely it is wrong due to very high loss values)
 
     ws = [initial_w]
     losses = []
@@ -131,15 +132,18 @@ def ridge_regression(y, tx, lambda_):
 
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
+        mse: scalar.
     """
     aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     A = tx.T.dot(tx) + aI
     b = tx.T.dot(y)
-    return np.linalg.solve(A, b)
+    w = np.linalg.solve(A, b)
+    loss = compute_loss(y, tx, w)
+    return w, loss
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    ''' Logistic regression using gradient descent or SGD (y ∈ {0, 1})
+    """ Logistic regression using gradient descent or SGD (y ∈ {0, 1})
 
     Args:
         y: numpy array of shape (N,), N is the number of samples.
@@ -152,7 +156,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
         ws: a list of length max_iters containing the model parameters
             as numpy arrays of shape (D, ), for each iteration of GD
-    '''
+    """
     # Define parameters to store w and loss
     ws = [initial_w]
     losses = []
@@ -174,7 +178,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    ''' Regularized logistic regression using gradient descent
+    """ Regularized logistic regression using gradient descent
         or SGD (y ∈ {0, 1}, with regularization term λ||w||^2)
 
     Args:
@@ -189,7 +193,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
         ws: a list of length max_iters containing the model parameters
             as numpy arrays of shape (D, ), for each iteration of GD
-    '''
+    """
     # Define parameters to store w and loss
     ws = [initial_w]
     losses = []
