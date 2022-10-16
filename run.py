@@ -37,12 +37,12 @@ if __name__ == '__main__':
         'expr_ID': args.expr_ID,
         'work_dir': os.path.join(args.work_dir, args.expr_ID),
         'model_selection':
-            {'least_squares_GD': False,
-             'least_squares_SGD': False,
-             'least_squares': False,
+            {'least_squares_GD': True,
+             'least_squares_SGD': True,
+             'least_squares': True,
              'ridge_regression': True,
-             'logistic_regression': False,
-             'reg_logistic_regression': False},
+             'logistic_regression': True,
+             'reg_logistic_regression': True},
         'n_epochs': 100,
         'grid_search': False,
         'cross_validation': True

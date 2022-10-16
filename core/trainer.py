@@ -47,7 +47,7 @@ def run_training(cfg, train_data, test_data, num_folds=5):
                     w_initial = np.zeros((x_train.shape[1]))
 
                     # run the actual training loop
-                    ws, losses = train(cfg, fold, hyperparams[i, :], model, w_initial, x_train, y_train)
+                    losses, ws = train(cfg, fold, hyperparams[i, :], model, w_initial, x_train, y_train)
 
                     # run evaluation on the val data
                     accuracy_eval = evaluate(model, ws, x_val, y_val)
@@ -73,12 +73,12 @@ def train(cfg, fold, trial_hyperparams, model_name, w_initial, x_train, y_train)
     logging.info(f'Training the model: {model_name} for fold {fold} - started training at {start_time}')
 
     # select and train the model based on the given model_name
-    ws, losses = choose_model(model_name, y_train, x_train, _lambda, w_initial, cfg.n_epochs, init_gamma)
+    losses, ws = choose_model(model_name, y_train, x_train, _lambda, w_initial, cfg.n_epochs, init_gamma)
 
     end_time = datetime.now().replace(microsecond=0)
     execution_time = (end_time - start_time).total_seconds()
     logging.info(f'Training of the model {model_name} for fold {fold} finished in {execution_time} seconds \n')
-    return ws, losses
+    return losses, ws
 
 
 def evaluate(model_name, ws, x_val, y_val):
@@ -151,22 +151,31 @@ def choose_best_result(cfg, hyperparams, hyperparam_acc, hyperparam_pred, model,
 def choose_model(model_name, y_train, x_train, lambda_, w_initial, max_iters, gamma):
     """ Choose and train the model based on the given model_name """
 
+    # TODO: Unify if the models should return losses and ws as lists or just final loss and w
     if model_name == 'least_squares_GD':
-        w, loss = least_squares_GD(y_train, x_train, w_initial, max_iters, gamma)
+        losses, ws = least_squares_GD(y_train, x_train, w_initial, max_iters, gamma)
+        w = ws[-1]
+        loss = losses[-1]
 
     elif model_name == 'least_squares_SGD':
-        w, loss = least_squares_SGD(y_train, x_train, w_initial, max_iters, gamma)
+        losses, ws = least_squares_SGD(y_train, x_train, w_initial, max_iters, gamma)
+        w = ws[-1]
+        loss = losses[-1]
 
     elif model_name == 'least_squares':
-        w, loss = least_squares(y_train, x_train)
+        loss, w = least_squares(y_train, x_train)
 
     elif model_name == 'ridge_regression':
-        w, loss = ridge_regression(y_train, x_train, lambda_)
+        loss, w = ridge_regression(y_train, x_train, lambda_)
 
     elif model_name == 'logistic_regression':
-        w, loss = logistic_regression(y_train, x_train, w_initial, max_iters, gamma)
+        losses, ws = logistic_regression(y_train, x_train, w_initial, max_iters, gamma)
+        w = ws[-1]
+        loss = losses[-1]
 
     elif model_name == 'reg_logistic_regression':
-        w, loss = reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
+        losses, ws = reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
+        w = ws[-1]
+        loss = losses[-1]
 
-    return w, loss
+    return loss, w
