@@ -45,8 +45,3 @@ def kfold_cross_validation(data, folds_num=5):
         train_idx.append(train_fold)
 
     return test_idx, train_idx
-
-
-def sigmoid(x):
-    """ Implementation of the sigmoid function """
-    return 1/(1+np.exp(-x))

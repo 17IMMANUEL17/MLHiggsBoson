@@ -7,7 +7,8 @@ import os
 
 from core.implementations import least_squares_GD, logistic_regression, reg_logistic_regression, ridge_regression, \
     least_squares_SGD, least_squares
-from tools.helpers import kfold_cross_validation, sigmoid
+from core.costs import sigmoid
+from tools.helpers import kfold_cross_validation
 from tools.cfg_parser import Config
 from tools.utils import create_submission
 
