@@ -3,12 +3,16 @@
 import logging
 import numpy as np
 from datetime import datetime
+import os
 
 from core.implementations import least_squares_GD, logistic_regression, reg_logistic_regression, ridge_regression, \
     least_squares_SGD, least_squares
+from tools.helpers import kfold_cross_validation, sigmoid
+from tools.cfg_parser import Config
+from tools.utils import create_submission
 
 
-def run_training(cfg, train_data, test_data):
+def run_training(cfg, train_data, test_data, num_folds=5):
     """ Running the training """
     logging.info(f'Starting the training!')
 
@@ -20,42 +24,74 @@ def run_training(cfg, train_data, test_data):
         if to_train:
 
             # run the training for each set of the hyperparameters
+            hyperparam_acc, hyperparam_pred = [], []
             for i in range(hyperparams.shape[0]):
-                # split data into the train / val sets
-                x_train, y_train = train_data["x_train"], train_data["y_train"]
-                # TODO: Split data into the validation set
-                x_val, y_val = None, None
+                acc, pred = [], []
 
-                # initialize the weights
-                w_initial = np.zeros((x_train.shape[1]))
+                # generate indexes of data for k-fold cross validation for train / val split
+                val_idx, train_ifx = kfold_cross_validation(train_data["x_train"], num_folds)
+                fold = 1 if not cfg.cross_validation else num_folds
 
-                # run the actual training loop
-                ws, losses = train(cfg, hyperparams[i, :], model, w_initial, x_train, y_train)
+                # run the training for each fold in the cross validation
+                for val_fold, train_fold in zip(val_idx[:fold], train_ifx[:fold]):
 
-                # run the evaluation
-                # accuracy_eval = evaluate(ws, x_val, y_val)
+                    # get validation data from the current fold
+                    x_val = np.array(train_data["x_train"])[np.array(val_fold)]
+                    y_val = np.array(train_data["y_train"])[np.array(val_fold)]
+
+                    # get training data from the current fold
+                    x_train = np.array(train_data["x_train"])[np.array(train_fold)]
+                    y_train = np.array(train_data["y_train"])[np.array(train_fold)]
+
+                    # initialize the weights
+                    w_initial = np.zeros((x_train.shape[1]))
+
+                    # run the actual training loop
+                    ws, losses = train(cfg, fold, hyperparams[i, :], model, w_initial, x_train, y_train)
+
+                    # run evaluation on the val data
+                    accuracy_eval = evaluate(model, ws, x_val, y_val)
+                    acc.append(accuracy_eval)
+
+                    # run evaluation on the test data
+                    pred_test = sigmoid(test_data['x_test'].dot(np.array(ws)))
+                    pred.append(pred_test)
+
+                # store the results to get the best hyperparameters
+                hyperparam_acc.append(np.mean(acc))
+                hyperparam_pred.append(np.round(np.mean(np.array(pred), axis=0)))
+
+            # select the best model (the best hyperparam setting) and create the .csv submission
+            choose_best_result(cfg, hyperparams, hyperparam_acc, hyperparam_pred, model, losses, test_data)
 
 
-def train(cfg, trial_hyperparams, model_name, w_initial, x_train, y_train):
+def train(cfg, fold, trial_hyperparams, model_name, w_initial, x_train, y_train):
     """ Running the training loop """
-    init_gamma, fin_gamma, gamma_decay, _lambda = trial_hyperparams
-    logging.info(f'init_gamma: {init_gamma}; fin_gamma: {fin_gamma}; gamma_decay: {gamma_decay}; _lambda: {_lambda};')
+    init_gamma, fin_gamma, gamma_dec, _lambda = trial_hyperparams
+    logging.info(f'init_gamma: {init_gamma}; fin_gamma: {fin_gamma}; gamma_decay: {gamma_dec}; _lambda: {_lambda};')
     start_time = datetime.now().replace(microsecond=0)
-    logging.info(f'Training the model: {model_name} - started training at {start_time}')
+    logging.info(f'Training the model: {model_name} for fold {fold} - started training at {start_time}')
 
     # select and train the model based on the given model_name
     ws, losses = choose_model(model_name, y_train, x_train, _lambda, w_initial, cfg.n_epochs, init_gamma)
 
     end_time = datetime.now().replace(microsecond=0)
     execution_time = (end_time - start_time).total_seconds()
-    logging.info(f'Training of the model {model_name} finished in {execution_time} seconds \n')
+    logging.info(f'Training of the model {model_name} for fold {fold} finished in {execution_time} seconds \n')
     return ws, losses
 
 
-def evaluate(ws, x_val, y_val):
+def evaluate(model_name, ws, x_val, y_val):
     """ Running the evaluation loop """
-    # TODO: Implement the model evaluation
-    raise NotImplementedError("Evaluation is not implemented yet!")
+    logging.info(f'Evaluating the model: {model_name}')
+    ws = np.array(ws)
+    pred_eval = np.round(sigmoid(x_val.dot(ws.T)))
+    if len(np.array(ws).shape) == 1:
+        accuracy_eval = np.mean(pred_eval == y_val) * 100
+    else:
+        accuracy_eval = np.mean(pred_eval == np.tile(y_val, (pred_eval.shape[1], 1)).T, axis=0) * 100
+    logging.info(f'Accuracy of the {model_name} on the validation set: {accuracy_eval} \n')
+    return accuracy_eval
 
 
 def choose_hyperparams(cfg):
@@ -74,6 +110,42 @@ def choose_hyperparams(cfg):
         _lambda = 0.1
         hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
     return hyperparams
+
+
+def choose_best_result(cfg, hyperparams, hyperparam_acc, hyperparam_pred, model, losses, test_data):
+    """ Choose the model and corresponding hyperparams with the best performance """
+    max_idx = np.argmax(hyperparam_acc)
+    final_test_pred = hyperparam_pred[max_idx]
+    final_test_pred[final_test_pred == 0] = -1
+    init_gamma, fin_gamma, gamma_dec, _lambda = hyperparams[max_idx, :]
+    acc = round(hyperparam_acc[max_idx], 2)
+
+    # store the results in the .yaml file
+    results = {"model": model,
+               "accuracy": acc.item(),
+               "epochs": cfg.n_epochs,
+               "loss": losses.item(),
+               "hyperparams": {
+                   "initial_gamma": init_gamma.item(),
+                   "final_gamma": fin_gamma.item(),
+                   "gamma_decay": gamma_dec.item(),
+                   "_lambda": _lambda.item()}
+               }
+    model_config = Config(default_cfg_path=None, **results)
+    model_config_path = os.path.join(cfg.work_dir, f"{model}_best_result.yaml")
+    model_config.write_cfg(model_config_path)
+
+    # create a csv submission for the AICrowd.com
+    csv_submission_path = os.path.join(cfg.work_dir, f"{model}_submission.csv")
+    create_submission(csv_submission_path, test_data['id_test'], final_test_pred)
+
+    logging.info(f'===================================================================================================')
+    logging.info(f'{model} -- Average accuracy after cross validation: {acc}')
+    logging.info(f'The best set of hyperparameters for {model}: ')
+    logging.info(f'init_gamma: {init_gamma}; fin_gamma: {fin_gamma}; gamma_decay: {gamma_dec}; _lambda: {_lambda};')
+    logging.info(f'Results stored in: {model_config_path}')
+    logging.info(f'Submission generated in: {csv_submission_path}')
+    logging.info(f'===================================================================================================')
 
 
 def choose_model(model_name, y_train, x_train, lambda_, w_initial, max_iters, gamma):

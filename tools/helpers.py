@@ -27,3 +27,26 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         end_index = min((batch_num + 1) * batch_size, data_size)
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
+
+
+def kfold_cross_validation(data, folds_num=5):
+    """ Divides all data samples into groups in order to use the whole dataset for training and validation """
+    data_idx = np.arange(data.shape[0])
+    test_idx, train_idx = [], []
+
+    # size of each fold
+    fold_size = int(data.shape[0] / folds_num)
+    for i in range(folds_num):
+
+        test_fold = data_idx[i * fold_size: (i + 1) * fold_size]
+        train_fold = np.delete(data_idx, test_fold)
+
+        test_idx.append(test_fold)
+        train_idx.append(train_fold)
+
+    return test_idx, train_idx
+
+
+def sigmoid(x):
+    """ Implementation of the sigmoid function """
+    return 1/(1+np.exp(-x))

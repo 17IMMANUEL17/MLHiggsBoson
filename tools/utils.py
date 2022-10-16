@@ -1,5 +1,6 @@
 """ General purpose utility functions to limit duplication of code """
 
+import csv
 import os
 import logging
 
@@ -38,3 +39,13 @@ def makelogger(log_dir=None, mode='w'):
         fh.setFormatter(formatter)
         logger.addHandler(fh)
     return logger
+
+
+def create_submission(submission_path, test_id, test_pred):
+    """ Creates an output .csv file for submission to AICrowd.com """
+    with open(submission_path, 'w') as csvfile:
+        fieldnames = ['Id', 'Prediction']
+        writer = csv.DictWriter(csvfile, delimiter=",", fieldnames=fieldnames)
+        writer.writeheader()
+        for row_1, row_2 in zip(test_id, test_pred):
+            writer.writerow({'Id': int(row_1), 'Prediction': int(row_2)})
