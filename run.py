@@ -38,13 +38,14 @@ if __name__ == '__main__':
         'work_dir': os.path.join(args.work_dir, args.expr_ID),
         'model_selection':
             {'least_squares_GD': True,
-             'least_squares_SGD': False,
-             'least_squares': False,
-             'ridge_regression': False,
-             'logistic_regression': False,
-             'reg_logistic_regression': False},
-        'n_epochs': 200,
-        'grid_search': False
+             'least_squares_SGD': True,
+             'least_squares': True,
+             'ridge_regression': True,
+             'logistic_regression': True,
+             'reg_logistic_regression': True},
+        'n_epochs': 100,
+        'grid_search': False,
+        'cross_validation': True
     }
 
     config = Config(default_cfg_path=default_cfg_path, **config)
