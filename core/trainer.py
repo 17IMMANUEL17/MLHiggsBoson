@@ -53,7 +53,7 @@ def run_training(cfg, train_data, test_data, num_folds=5):
                     # run evaluation on the val data
                     accuracy_eval = evaluate(model, ws, pol_x_val, y_val)
                     acc.append(accuracy_eval)
-                    #prediction to change if we test least squares
+        
                     # run evaluation on the test data
                     if model == 'logistic_regression' or model == 'reg_logistic_regression':
                         pred_test = np.round(sigmoid(pol_x_val.dot(ws.T)))
