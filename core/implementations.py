@@ -5,7 +5,7 @@ import numpy as np
 
 from core.costs import calculate_mae, calculate_mse, compute_loss,\
                         sigmoid, log_likelihood_loss 
-import tools.helpers
+from tools.helpers import batch_iter, kfold_cross_validation
 
 
 def compute_gradient_LS(y, tx, w):
@@ -88,7 +88,7 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
     for n_iter in range(max_iters):
         #batch_size=1 as in the requirements
-        for y_batch, tx_batch in tools.helpers.batch_iter(y, tx, 1, num_batches=1):
+        for y_batch, tx_batch in batch_iter(y, tx, 1, num_batches=1):
             # compute a stochastic gradient and loss
             grad, _ = compute_gradient_LS(y_batch, tx_batch, w)
             # update w through the stochastic gradient update
@@ -278,7 +278,7 @@ def get_best_lambda(model_name, train_data, num_folds=5):
     Returns:
         a float that is the best lambda obtained for the analyzed model.
     """
-    val_idx, train_ifx = tools.helpers.kfold_cross_validation(train_data["x_train"], num_folds)
+    val_idx, train_ifx = kfold_cross_validation(train_data["x_train"], num_folds)
     lambdas = np.logspace(-4, 0,20)
     # define lists to store the loss of test data
     # cross validation

@@ -107,7 +107,6 @@ def choose_hyperparams(model, cfg, train_data):
         np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]]) """
     if cfg.grid_search:
         logging.info(f'Running the hyperparameter Grid Search!')
-        hyperparams= np.zeros((1,4))
         hyperparams= hyperparams_gs(model,cfg, train_data)
     else:
         logging.info(f'Default hyperparameters are used for the training!\n')
