@@ -2,7 +2,6 @@
 
 import argparse
 import os
-from re import T
 
 from tools.cfg_parser import Config
 from core.data_preparation import prepare_data
