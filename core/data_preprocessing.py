@@ -148,15 +148,6 @@ def preprocess_data(train_data, test_data):
     train_data["x_train"][:, cont_columns], mean_train, std_train = normalize_data(train_data["x_train"][:, cont_columns])
     test_data["x_test"][:, cont_columns], _, _ = normalize_data(test_data["x_test"][:, cont_columns], mean_train, std_train)
     
-    # add bias term
-    # ignore, because build_poly adds bias term
-    # train_data["x_train"] = add_bias(train_data["x_train"])
-    # test_data["x_test"] = add_bias(test_data["x_test"])
-
-    # build polynomial features
-    train_data["x_train"] = build_poly(train_data["x_train"], 3)
-    test_data["x_test"] = build_poly(test_data["x_test"], 3)
-
     logging.info(f'Data preprocessed successfully!')
 
 

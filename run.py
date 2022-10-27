@@ -40,11 +40,11 @@ if __name__ == '__main__':
             {'least_squares_GD': True,
              'least_squares_SGD': True,
              'least_squares': True,
-             'ridge_regression': True,
+             'ridge_regression':True,
              'logistic_regression': True,
              'reg_logistic_regression': True},
-        'n_epochs': 100,
-        'grid_search': False,
+        'n_epochs': 200,
+        'grid_search': True,
         'cross_validation': True
     }
 

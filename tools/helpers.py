@@ -11,30 +11,30 @@ def build_poly(x, degree):
     return poly
 
 
-def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
-    """
-    Generate a minibatch iterator for a dataset.
-    Takes as input two iterables (here the output desired values 'y' and the input data 'tx')
-    Outputs an iterator which gives mini-batches of `batch_size` matching elements from `y` and `tx`.
-    Data can be randomly shuffled to avoid ordering in the original data messing with the randomness of the minibatches.
-    Example of use :
-    for minibatch_y, minibatch_tx in batch_iter(y, tx, 32):
-        <DO-SOMETHING>
+def batch_iter(y, tx, batch_size, num_batches, shuffle = True) :
+    """Iterate through data in batches.
+    Args:
+        tx (np.ndarray): Features data
+        y (np.ndarray): Labels data
+        batch_size (int, optional): Batch size. Defaults to None (i.e. full batch)
+        num_batches (int, optional): Number of batches to iterate through. Defaults to None (i.e. use all data)
+        shuffle (bool, optional): Whether to shuffle the data before generating batches. Defaults to True.
+    Yields:
+        Generator: (tx_batch, y_batch)
     """
     data_size = len(y)
 
     if shuffle:
         shuffle_indices = np.random.permutation(np.arange(data_size))
-        shuffled_y = y[shuffle_indices]
-        shuffled_tx = tx[shuffle_indices]
-    else:
-        shuffled_y = y
-        shuffled_tx = tx
-    for batch_num in range(num_batches):
-        start_index = batch_num * batch_size
-        end_index = min((batch_num + 1) * batch_size, data_size)
-        if start_index != end_index:
-            yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
+        y = y[shuffle_indices]
+        tx = tx[shuffle_indices]
+
+    batch_size = batch_size or len(tx)
+    batches = int(np.ceil(len(tx) // batch_size))
+    num_batches = num_batches or batches
+
+    for i in range(num_batches):
+        yield y[i*batch_size:(i+1)*batch_size], tx[i*batch_size:(i+1)*batch_size]
 
 
 def kfold_cross_validation(data, folds_num=5):
@@ -53,3 +53,4 @@ def kfold_cross_validation(data, folds_num=5):
         train_idx.append(train_fold)
 
     return test_idx, train_idx
+
