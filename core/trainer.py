@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 
 from core.implementations import least_squares_GD, logistic_regression, reg_logistic_regression, ridge_regression, \
-    least_squares_SGD, least_squares, hyperparams_gs
+    least_squares_SGD, least_squares, logistic_regression_bfgs, reg_logistic_regression_bfgs, hyperparams_gs
 from core.costs import sigmoid
 from tools.helpers import kfold_cross_validation 
 from tools.cfg_parser import Config
@@ -88,10 +88,10 @@ def train(cfg, fold, trial_hyperparams, model_name, x_train, y_train, x_val):
 def evaluate(model_name, ws, x_val, y_val):
     """ Running the evaluation loop """
     logging.info(f'Evaluating the model: {model_name}')
-    ws = np.array(ws)
+    ws = np.array(ws).reshape(-1, 1)
     #choosing the correct prediction function 
-    if model_name == 'logistic_regression' or model_name == 'reg_logistic_regression':
-        pred_eval = np.round(sigmoid(x_val.dot(ws.T)))
+    if 'logistic_regression' in model_name:
+        pred_eval = np.round(sigmoid(x_val.dot(ws)))
     else:
         pred_eval = np.round(x_val.dot(ws))
     if len(np.array(ws).shape) == 1:
@@ -224,6 +224,30 @@ def choose_model(model_name, y_train, x_train, lambda_, max_iters, gamma, x_val)
         w_initial = np.zeros((pol_x_train.shape[1]))
 
         losses, ws = reg_logistic_regression(y_train, pol_x_train, lambda_, w_initial, max_iters, gamma)
+        w = ws[-1]
+        loss = losses[-1]
+    
+    elif model_name == 'logistic_regression_bfgs':
+        # build polynomial features: best experimental degree for logistic_regression=3
+        pol_x_train = build_poly(x_train, 3)
+        pol_x_val = build_poly(x_val, 3)
+
+        # initialize the weights
+        w_initial = np.zeros((pol_x_train.shape[1]))
+
+        losses, ws = logistic_regression_bfgs(y_train, pol_x_train, w_initial, max_iters, gamma)
+        w = ws[-1]
+        loss = losses[-1]
+
+    elif model_name == 'reg_logistic_regression_bfgs':
+        # build polynomial features: best experimental degree for reg_logistic_regression=3
+        pol_x_train = build_poly(x_train, 3)
+        pol_x_val = build_poly(x_val, 3)
+
+        # initialize the weights
+        w_initial = np.zeros((pol_x_train.shape[1]))
+
+        losses, ws = reg_logistic_regression_bfgs(y_train, pol_x_train, lambda_, w_initial, max_iters, gamma)
         w = ws[-1]
         loss = losses[-1]
 
