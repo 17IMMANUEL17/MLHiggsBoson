@@ -165,8 +165,8 @@ def choose_hyperparams(cfg):
         init_gamma = [0.01, 0.05, 0.1, 0.2]
         final_gamma = [0.001, 0.0005, 0.0001]
         gamma_decay = [0.3, 0.5, 0.7]
-        _lambda = [0.05, 0.1, 0.2]
-        poly_degree = [1, 2, 3, 4, 5]
+        _lambda = [0.001, 0.01, 0.05, 0.1, 0.2]
+        poly_degree = [1, 2, 3, 4]
         hyperparams = prepare_gs(
             init_gamma, final_gamma, gamma_decay, _lambda, poly_degree
         )
