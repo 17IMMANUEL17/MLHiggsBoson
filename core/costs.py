@@ -24,12 +24,15 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-def log_likelihood_loss(y_true, y_pred):
+def log_likelihood_loss(y_true, y_pred, w=0, lambda_=0.0):
     """Compute negative log likelihood for logistic regression
 
     Args:
         y_true: true labels, numpy array of shape (N,)
         y_pred: predicted labels, numpy array of shape (N,)
+
+        lambda_: regularization parameter
+        w: weights
 
     Returns:
         loss: negative log likelihood, scalar
@@ -37,4 +40,4 @@ def log_likelihood_loss(y_true, y_pred):
     # binary cross entropy
     y_zero_loss = y_true * np.log(y_pred + 1e-9)
     y_one_loss = (1-y_true) * np.log(1 - y_pred + 1e-9)
-    return -np.mean(y_zero_loss + y_one_loss)
+    return -np.mean(y_zero_loss + y_one_loss) + lambda_ * np.sum(w ** 2)

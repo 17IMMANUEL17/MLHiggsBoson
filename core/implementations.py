@@ -5,6 +5,7 @@ import numpy as np
 
 from core.costs import calculate_mae, calculate_mse, compute_loss,\
                         sigmoid, log_likelihood_loss 
+from core.linesearch import BFGS
 from tools.helpers import batch_iter, kfold_cross_validation
 
 
@@ -143,6 +144,29 @@ def ridge_regression(y, tx, lambda_):
     return loss, w
 
 
+def logistic_regression_GD_step(w, tx, y, gamma, lambda_=0):
+    """One step of Gradient Descent for Logistic Regression.
+
+    Args:
+        w: numpy array of shape (D,), D is the number of features.
+        tx: numpy array of shape (N,D), N is the number of samples.
+        y: numpy array of shape (N,), true labels.
+        gamma: scalar.
+
+    Returns:
+        grad: gradient of loss, numpy array of shape (D,)
+    """
+    # compute loss, gradient
+    y_pred = sigmoid(tx.dot(w))
+    grad = compute_gradient_LR(tx, y, y_pred) + 2 * lambda_ * w
+    loss = log_likelihood_loss(y, y_pred, w, lambda_)
+
+    # gradient w by descent update
+    w = w - gamma * grad
+
+    return w, loss
+
+
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """ Logistic regression using gradient descent or SGD (y ∈ {0, 1})
 
@@ -158,17 +182,13 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters
             as numpy arrays of shape (D, ), for each iteration of GD
     """
+    step_function = logistic_regression_GD_step
     # Define parameters to store w and loss
     ws = [initial_w]
     losses = []
     w = initial_w
     for n_iter in range(max_iters):
-        # compute loss, gradient
-        y_pred = sigmoid(tx.dot(w))
-        loss = log_likelihood_loss(y, y_pred)
-        grad = compute_gradient_LR(tx, y, y_pred)
-        # gradient w by descent update
-        w = w - gamma * grad
+        w, loss = step_function(w, tx, y, gamma)
 
         # store w and loss
         ws.append(w)
@@ -195,18 +215,13 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters
             as numpy arrays of shape (D, ), for each iteration of GD
     """
+    step_function = logistic_regression_GD_step
     # Define parameters to store w and loss
     ws = [initial_w]
     losses = []
     w = initial_w
     for n_iter in range(max_iters):
-        # compute loss, gradient
-        y_pred = sigmoid(tx.dot(w))
-        loss = log_likelihood_loss(y, y_pred) + lambda_ * np.sum(w ** 2)
-        grad = compute_gradient_LR(tx, y, y_pred) + 2 * lambda_ * w
-
-        # gradient w by descent update
-        w = w - gamma * grad
+        w, loss = step_function(w, tx, y, gamma, lambda_)
 
         # store w and loss
         ws.append(w)
@@ -214,6 +229,72 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         logging.info("reg_logistic_regression_Gradient Descent({bi}/{ti}): loss={l}".format(
               bi=n_iter, ti=max_iters - 1, l=loss))
     return losses, ws
+
+
+def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
+    """ Logistic regression using bfgs algorithm (y ∈ {0, 1})
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        initial_w: shape=(D, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of GD
+        gamma: a scalar denoting the stepsize
+
+    Returns:
+        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
+        ws: a list of length max_iters containing the model parameters
+            as numpy arrays of shape (D, ), for each iteration of GD
+    """
+    bfgs = BFGS(initial_w.shape[0], 0.5, 0.1)
+    step_function = bfgs.step
+    # Define parameters to store w and loss
+    ws = [initial_w]
+    losses = []
+    w = initial_w
+    for n_iter in range(max_iters):
+        w, loss = step_function(w, tx, y, gamma)
+
+        # store w and loss
+        ws.append(w)
+        losses.append(loss)
+        logging.info("logistic_regression_BFGS({bi}/{ti}): loss={l}".format(
+              bi=n_iter, ti=max_iters - 1, l=loss))
+    return losses, ws
+
+
+def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
+    """ Regularized logistic regression using bfgs algorithm (y ∈ {0, 1}, with regularization term λ||w||^2)
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        lambda_: scalar, regularization term
+        initial_w: shape=(D, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of GD
+        gamma: a scalar denoting the stepsize
+
+    Returns:
+        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
+        ws: a list of length max_iters containing the model parameters
+            as numpy arrays of shape (D, ), for each iteration of GD
+    """
+    bfgs = BFGS(initial_w.shape[0], 0.5, 0.1)
+    step_function = bfgs.step
+    # Define parameters to store w and loss
+    ws = [initial_w]
+    losses = []
+    w = initial_w
+    for n_iter in range(max_iters):
+        w, loss = step_function(w, tx, y, gamma, lambda_=lambda_)
+
+        # store w and loss
+        ws.append(w)
+        losses.append(loss)
+        logging.info("reg_logistic_regression_BFGS({bi}/{ti}): loss={l}".format(
+              bi=n_iter, ti=max_iters - 1, l=loss))
+    return losses, ws
+
 
 def hyperparams_gs(model_name,cfg, train_data):
     # auxiliary function: I don't delete it since it depends on how you want to refactor the code and on Mirali's implementations but\
@@ -248,7 +329,6 @@ def hyperparams_gs(model_name,cfg, train_data):
         gamma_decay = 0.5
         _lambda = get_best_lambda(model_name, train_data)
         hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-        
 
     elif model_name == 'logistic_regression':
         initial_gamma = 0.01
@@ -256,11 +336,24 @@ def hyperparams_gs(model_name,cfg, train_data):
         gamma_decay = 0.5
         _lambda = 0.01
         hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-        
-        
+
     elif model_name == 'reg_logistic_regression':
         initial_gamma = 0.01
         final_gamma = 0.0001
+        gamma_decay = 0.5
+        _lambda = get_best_lambda(model_name, train_data)
+        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
+
+    elif model_name == "logistic_regression_bfgs":
+        initial_gamma = 1
+        final_gamma = 0.001
+        gamma_decay = 0.5
+        _lambda = 0.01
+        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
+
+    elif model_name == 'reg_logistic_regression_bfgs':
+        initial_gamma = 1
+        final_gamma = 0.001
         gamma_decay = 0.5
         _lambda = get_best_lambda(model_name, train_data)
         hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
@@ -279,15 +372,12 @@ def get_best_lambda(model_name, train_data, num_folds=5):
         a float that is the best lambda obtained for the analyzed model.
     """
     val_idx, train_ifx = kfold_cross_validation(train_data["x_train"], num_folds)
-    lambdas = np.logspace(-4, 0,20)
+    lambdas = np.logspace(-4, 0, 10)
     # define lists to store the loss of test data
     # cross validation
-    i=0
-    logging.info("Running the grid search on lambda!".format(
-              bi=i))
-    for lambda_ in lambdas:
-        logging.info("Evaluating  {bi}/20".format(
-              bi=i))
+    logging.info("Running the grid search on lambda!")
+    for i, lambda_ in enumerate(lambdas):
+        logging.info(f"Evaluating  {i+1}/{len(lambdas)}")
         rmse_test_tmp = []
         rmse_test=[]
         for val_fold, train_fold in zip(val_idx[:num_folds], train_ifx[:num_folds]):
@@ -302,13 +392,21 @@ def get_best_lambda(model_name, train_data, num_folds=5):
                 w_initial = np.zeros((x_train.shape[1]))
                 gamma=0.1
                 max_iters=100
-                _,ws= reg_logistic_regression(y_train,x_train, lambda_, w_initial, max_iters, gamma )
+                _, ws= reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
                 w = ws[-1]
                 y_pred = sigmoid(x_test.dot(w))
-                loss_test = log_likelihood_loss(y_test, y_pred) + lambda_ * np.sum(w ** 2)
+                loss_test = log_likelihood_loss(y_test, y_pred, w, lambda_)
+            elif model_name == 'reg_logistic_regression_bfgs':
+                w_initial = np.zeros((x_train.shape[1]))
+                gamma = 1
+                max_iters=200
+                _, ws= reg_logistic_regression_bfgs(y_train, x_train, lambda_, w_initial, max_iters, gamma)
+                w = ws[-1]
+                y_pred = sigmoid(x_test.dot(w)).reshape(-1, 1)
+                y_test = y_test.reshape(-1, 1)
+                loss_test = log_likelihood_loss(y_test, y_pred, w, lambda_)
             rmse_test_tmp.append(loss_test)
         rmse_test.append(np.mean(rmse_test_tmp))
-        i+=1
     ind_lambda = np.argmin(rmse_test)
     logging.info("Best lambda for model {i} = {x}!".format(
               i=model_name, x=lambdas[ind_lambda]))
