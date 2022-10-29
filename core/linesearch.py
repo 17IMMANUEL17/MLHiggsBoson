@@ -83,9 +83,9 @@ def LR_compute_gradient(tx, y_true, y_pred):
     return tx.T.dot(y_pred - y_true) / len(y_true)
 
 
-def LR_optimization_objective(w, tx, y, lambda_=0.0):
+def LR_optimization_objective(w, tx, y):
     y_pred = sigmoid(tx @ w)
-    loss = log_likelihood_loss(y, y_pred, w, lambda_)
+    loss = log_likelihood_loss(y, y_pred)
     return loss
 
 
@@ -144,7 +144,7 @@ class BFGS:
         pk = - self.inv_B @ grad # (D,) 
 
         alpha = backtracking_line_search(pk, grad, w, gamma, self.beta, self.c, 
-                                         LR_optimization_objective, tx, y, lambda_)
+                                         LR_optimization_objective, tx, y)
         sk = alpha * pk # (D,)
         w = w + sk
 

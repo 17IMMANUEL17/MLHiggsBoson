@@ -67,7 +67,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
         losses.append(loss)
         logging.info("least_square_Gradient Descent({bi}/{ti}): loss={l}".format(
             bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+    loss = compute_loss(y, tx, w)
+    return w, loss
 
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
@@ -102,7 +103,8 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
         logging.info("least_squares_SGD({bi}/{ti}): loss={l}".format(
             bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+    loss = compute_loss(y, tx, w)
+    return w, loss
 
 
 def least_squares(y, tx):
@@ -121,7 +123,7 @@ def least_squares(y, tx):
     b = tx.T.dot(y)
     w = np.linalg.solve(A, b)
     mse = compute_loss(y, tx, w)
-    return mse, w
+    return w, mse
 
 
 def ridge_regression(y, tx, lambda_):
@@ -141,7 +143,7 @@ def ridge_regression(y, tx, lambda_):
     b = tx.T.dot(y)
     w = np.linalg.solve(A, b)
     loss = compute_loss(y, tx, w)
-    return loss, w
+    return w, loss
 
 
 def logistic_regression_GD_step(w, tx, y, gamma, lambda_=0):
@@ -159,7 +161,7 @@ def logistic_regression_GD_step(w, tx, y, gamma, lambda_=0):
     # compute loss, gradient
     y_pred = sigmoid(tx.dot(w))
     grad = compute_gradient_LR(tx, y, y_pred) + 2 * lambda_ * w
-    loss = log_likelihood_loss(y, y_pred, w, lambda_)
+    loss = log_likelihood_loss(y, y_pred)
 
     # gradient w by descent update
     w = w - gamma * grad
@@ -195,7 +197,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         losses.append(loss)
         logging.info("logistic_regression_Gradient Descent({bi}/{ti}): loss={l}".format(
               bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
+    return w, loss
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
@@ -228,7 +231,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         losses.append(loss)
         logging.info("reg_logistic_regression_Gradient Descent({bi}/{ti}): loss={l}".format(
               bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
+    return w, loss
 
 
 def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
@@ -260,7 +264,9 @@ def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
         losses.append(loss)
         logging.info("logistic_regression_BFGS({bi}/{ti}): loss={l}".format(
               bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+    y.shape = (y.shape[0], 1)
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
+    return w, loss
 
 
 def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
@@ -293,7 +299,8 @@ def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
         losses.append(loss)
         logging.info("reg_logistic_regression_BFGS({bi}/{ti}): loss={l}".format(
               bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
+    return w, loss
 
 
 def hyperparams_gs(model_name,cfg, train_data):
@@ -386,22 +393,20 @@ def get_best_lambda(model_name, train_data, num_folds=5):
             x_train = np.array(train_data["x_train"])[np.array(train_fold)]
             y_train = np.array(train_data["y_train"])[np.array(train_fold)]
             if model_name == 'ridge_regression':
-                _,w = ridge_regression(y_train, x_train, lambda_)
+                w, _ = ridge_regression(y_train, x_train, lambda_)
                 loss_test = np.sqrt(2 * compute_loss(y_test, x_test, w))
             elif model_name == 'reg_logistic_regression':
                 w_initial = np.zeros((x_train.shape[1]))
                 gamma=0.1
                 max_iters=100
-                _, ws= reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
-                w = ws[-1]
+                w, _= reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
                 y_pred = sigmoid(x_test.dot(w))
                 loss_test = log_likelihood_loss(y_test, y_pred, w, lambda_)
             elif model_name == 'reg_logistic_regression_bfgs':
                 w_initial = np.zeros((x_train.shape[1]))
                 gamma = 1
                 max_iters=200
-                _, ws= reg_logistic_regression_bfgs(y_train, x_train, lambda_, w_initial, max_iters, gamma)
-                w = ws[-1]
+                w, _= reg_logistic_regression_bfgs(y_train, x_train, lambda_, w_initial, max_iters, gamma)
                 y_pred = sigmoid(x_test.dot(w)).reshape(-1, 1)
                 y_test = y_test.reshape(-1, 1)
                 loss_test = log_likelihood_loss(y_test, y_pred, w, lambda_)
