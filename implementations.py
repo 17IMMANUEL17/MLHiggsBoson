@@ -23,8 +23,6 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters 
             as numpy arrays of shape (D, ), for each iteration of GD
     """
-    ws = [initial_w]
-    losses = [np.inf]
     w = initial_w
     for n_iter in range(max_iters):
         # compute loss, gradient
@@ -32,10 +30,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         # gradient w by descent update
         w = w - gamma * grad
         # store w and loss
-        ws.append(w)
-        losses.append(loss)
         logging.info("Least Squares GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
-    loss = losses[-1]
     return w, loss
 
 
