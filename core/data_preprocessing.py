@@ -21,7 +21,9 @@ class Imputer:
         fit_transform: fit and transform the data
     """
 
-    def __init__(self, missing_values=np.nan, strategy='mean', fill_value=None, axis=None):
+    def __init__(
+        self, missing_values=np.nan, strategy="mean", fill_value=None, axis=None
+    ):
         self.missing_values = missing_values
         self.fill_value = fill_value
         self.axis = axis
@@ -36,14 +38,14 @@ class Imputer:
             raise ValueError("Invalid strategy for imputation")
 
     def mean_imputation(self, x):
-        """ Calculate the mean"""
+        """Calculate the mean"""
         if np.isnan(self.missing_values):
             self.fill_value = np.nanmean(x, axis=self.axis)
         else:
             self.fill_value = np.mean(x[x != self.missing_values], axis=self.axis)
 
     def median_imputation(self, x):
-        """ Calculate the median"""
+        """Calculate the median"""
         if np.isnan(self.missing_values):
             self.fill_value = np.nanmedian(x, axis=self.axis)
         else:
@@ -79,7 +81,7 @@ class Imputer:
 
 
 def one_hot_encode(data, column):
-    """ One hot encode the given columnn of data and remove the encoded column """
+    """One hot encode the given columnn of data and remove the encoded column"""
     unique_values = np.unique(data[:, column])
     for value in unique_values:
         data = np.concatenate((data, (data[:, column] == value).reshape(-1, 1)), axis=1)
@@ -88,35 +90,39 @@ def one_hot_encode(data, column):
 
 
 def log_transform(data, columns):
-    """ Log transform the data """
+    """Log transform the data"""
     pos_cols = np.all(data[:, columns] > 0, axis=0)
     data[:, columns[pos_cols]] = np.log(data[:, columns[pos_cols]])
     return data
 
 
 def remove_outliers(data, columns):
-    """ Remove outliers from the data using the interquartile range method """
+    """Remove outliers from the data using the interquartile range method"""
     right, left = np.percentile(data[:, columns], [90, 10], axis=0)
     iqr = right - left
     min_value = left - 1.5 * iqr
     max_value = right + 1.5 * iqr
     mask = np.ones(data.shape[0], dtype=bool)
     for i in range(len(columns)):
-        mask = mask & (data[:, columns[i]] > min_value[i]) & (data[:, columns[i]] < max_value[i])
+        mask = (
+            mask
+            & (data[:, columns[i]] > min_value[i])
+            & (data[:, columns[i]] < max_value[i])
+        )
     return mask
 
 
 def preprocess_data(cfg, train_data, test_data):
-    """ Data preprocessing, including feature engineering and normalization """
-    logging.info(f'Starting data preprocessing!')
+    """Data preprocessing, including feature engineering and normalization"""
+    logging.info(f"Starting data preprocessing!")
 
     # replace -999 to nan
-    nan_imputer = Imputer(missing_values=-999, strategy='constant', fill_value=np.nan)
-    train_data['x_train'] = nan_imputer.fit_transform(train_data['x_train'])
-    test_data['x_test'] = nan_imputer.transform(test_data['x_test'])
+    nan_imputer = Imputer(missing_values=-999, strategy="constant", fill_value=np.nan)
+    train_data["x_train"] = nan_imputer.fit_transform(train_data["x_train"])
+    test_data["x_test"] = nan_imputer.transform(test_data["x_test"])
 
     # impute nan values
-    mean_imputer = Imputer(missing_values=np.nan, strategy='mean', axis=0)
+    mean_imputer = Imputer(missing_values=np.nan, strategy="mean", axis=0)
     train_data["x_train"] = mean_imputer.fit_transform(train_data["x_train"])
     test_data["x_test"] = mean_imputer.transform(test_data["x_test"])
 
@@ -144,31 +150,33 @@ def preprocess_data(cfg, train_data, test_data):
 
     # normalize train/test data
     train_data["x_train"][:, cont_columns], mean_train, std_train = normalize_data(
-        train_data["x_train"][:, cont_columns])
-    test_data["x_test"][:, cont_columns], _, _ = normalize_data(test_data["x_test"][:, cont_columns], mean_train,
-                                                                std_train)
+        train_data["x_train"][:, cont_columns]
+    )
+    test_data["x_test"][:, cont_columns], _, _ = normalize_data(
+        test_data["x_test"][:, cont_columns], mean_train, std_train
+    )
 
     # add bias term (skip when polynomial features are required because build_poly adds the bias term anyway)
     if not cfg.polynomial_features:
         train_data["x_train"] = add_bias(train_data["x_train"])
         test_data["x_test"] = add_bias(test_data["x_test"])
 
-    logging.info(f'Data preprocessed successfully!')
+    logging.info(f"Data preprocessed successfully!")
 
 
 def add_bias(data):
-    """ Add bias to the data """
+    """Add bias to the data"""
     return np.concatenate((np.ones((data.shape[0], 1)), data), axis=1)
 
 
 def normalize_data(data, mean_train=None, std_train=None):
-    """ Normalize the data """
+    """Normalize the data"""
     data, mean_data, std_data_new = standardize_data(data, mean_train, std_train)
     return data, mean_data, std_data_new
 
 
 def standardize_data(x, mean_x=None, std_x=None):
-    """ Standardize the data (compute mean and std only for the training) """
+    """Standardize the data (compute mean and std only for the training)"""
 
     # compute mean only for the training data
     if mean_x is None:

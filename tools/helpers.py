@@ -36,18 +36,20 @@ def batch_iter(y, tx, batch_size, num_batches, shuffle=True):
     num_batches = num_batches or batches
 
     for i in range(num_batches):
-        yield y[i * batch_size:(i + 1) * batch_size], tx[i * batch_size:(i + 1) * batch_size]
+        yield y[i * batch_size : (i + 1) * batch_size], tx[
+            i * batch_size : (i + 1) * batch_size
+        ]
 
 
 def kfold_cross_validation(data, folds_num=5):
-    """ Divides all data samples into groups in order to use the whole dataset for training and validation """
+    """Divides all data samples into groups in order to use the whole dataset for training and validation"""
     data_idx = np.arange(data.shape[0])
     test_idx, train_idx = [], []
 
     # size of each fold
     fold_size = int(data.shape[0] / folds_num)
     for i in range(folds_num):
-        test_fold = data_idx[i * fold_size: (i + 1) * fold_size]
+        test_fold = data_idx[i * fold_size : (i + 1) * fold_size]
         train_fold = np.delete(data_idx, test_fold)
 
         test_idx.append(test_fold)
@@ -57,11 +59,24 @@ def kfold_cross_validation(data, folds_num=5):
 
 
 def prepare_gs(init_gamma, final_gamma, gamma_decay, _lambda, poly_degree):
-    """ Prepare the grid search hyperparam matrix """
-    dims = len(init_gamma) * len(final_gamma) * len(gamma_decay) * len(_lambda) * len(poly_degree)
-    a, b, c, d, e = np.meshgrid(init_gamma, final_gamma, gamma_decay, _lambda, poly_degree)
-    a, b, c, d, e = np.reshape(a, (dims, -1)), np.reshape(b, (dims, -1)), np.reshape(c, (dims, -1)), \
-                    np.reshape(d, (dims, -1)), np.reshape(e, (dims, -1))
+    """Prepare the grid search hyperparam matrix"""
+    dims = (
+        len(init_gamma)
+        * len(final_gamma)
+        * len(gamma_decay)
+        * len(_lambda)
+        * len(poly_degree)
+    )
+    a, b, c, d, e = np.meshgrid(
+        init_gamma, final_gamma, gamma_decay, _lambda, poly_degree
+    )
+    a, b, c, d, e = (
+        np.reshape(a, (dims, -1)),
+        np.reshape(b, (dims, -1)),
+        np.reshape(c, (dims, -1)),
+        np.reshape(d, (dims, -1)),
+        np.reshape(e, (dims, -1)),
+    )
     hyperparam_matrix = np.concatenate((a, b, c, d, e), axis=1)
     return hyperparam_matrix
 

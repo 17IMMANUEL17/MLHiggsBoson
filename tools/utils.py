@@ -20,32 +20,34 @@ def makepath(desired_path, isfile=False):
     return desired_path
 
 
-def makelogger(log_dir=None, mode='w'):
-    """ Initializes and configures the logger """
+def makelogger(log_dir=None, mode="w"):
+    """Initializes and configures the logger"""
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
     # if the logging directory is given, logs will be stored in a file
     if log_dir:
         makepath(log_dir, isfile=True)
-        fh = logging.FileHandler('%s' % log_dir, mode=mode)
+        fh = logging.FileHandler("%s" % log_dir, mode=mode)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
     return logger
 
 
 def create_submission(submission_path, test_id, test_pred):
-    """ Creates an output .csv file for submission to AICrowd.com """
-    with open(submission_path, 'w') as csvfile:
-        fieldnames = ['Id', 'Prediction']
+    """Creates an output .csv file for submission to AICrowd.com"""
+    with open(submission_path, "w") as csvfile:
+        fieldnames = ["Id", "Prediction"]
         writer = csv.DictWriter(csvfile, delimiter=",", fieldnames=fieldnames)
         writer.writeheader()
         for row_1, row_2 in zip(test_id, test_pred):
-            writer.writerow({'Id': int(row_1), 'Prediction': int(row_2)})
+            writer.writerow({"Id": int(row_1), "Prediction": int(row_2)})

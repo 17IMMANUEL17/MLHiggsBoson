@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 from core.costs import compute_loss, sigmoid, log_likelihood_loss
-from tools.helpers import (batch_iter, compute_gradient_LS, logistic_regression_GD_step)
+from tools.helpers import batch_iter, compute_gradient_LS, logistic_regression_GD_step
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
@@ -20,7 +20,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
 
     Returns:
         losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters 
+        ws: a list of length max_iters containing the model parameters
             as numpy arrays of shape (D, ), for each iteration of GD
     """
     ws = [initial_w]
@@ -34,7 +34,11 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("Least Squares Gradient Descent({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+        logging.info(
+            "Least Squares Gradient Descent({bi}/{ti}): loss={l}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss
+            )
+        )
     loss = compute_loss(y, tx, w)
     return w, loss
 
@@ -65,7 +69,11 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
             # store w and loss
             ws.append(w)
             losses.append(loss)
-        logging.info("Least Squares SGD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+        logging.info(
+            "Least Squares SGD ({bi}/{ti}): loss={l}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss
+            )
+        )
     loss = compute_loss(y, tx, w)
     return w, loss
 
@@ -110,7 +118,7 @@ def ridge_regression(y, tx, lambda_):
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """ Logistic regression using gradient descent or SGD (y ∈ {0, 1})
+    """Logistic regression using gradient descent or SGD (y ∈ {0, 1})
 
     Args:
         y: numpy array of shape (N,), N is the number of samples.
@@ -135,13 +143,17 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("Logistic Regression GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+        logging.info(
+            "Logistic Regression GD ({bi}/{ti}): loss={l}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss
+            )
+        )
     loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
     return w, loss
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    """ Regularized logistic regression using gradient descent
+    """Regularized logistic regression using gradient descent
         or SGD (y ∈ {0, 1}, with regularization term λ||w||^2)
 
     Args:
@@ -168,6 +180,10 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("Reg Logistic Regression GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+        logging.info(
+            "Reg Logistic Regression GD ({bi}/{ti}): loss={l}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss
+            )
+        )
     loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
     return w, loss

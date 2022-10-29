@@ -10,46 +10,52 @@ from tools.utils import makelogger, makepath
 
 
 def run_higgs(cfg):
-    """ Runs main logic of the project """
-    logger = makelogger(makepath(os.path.join(cfg.work_dir, f'{cfg.expr_ID}.log'), isfile=True))
-    logger.info(f'[{cfg.expr_ID}] - ML-Higgs experiment has started!')
+    """Runs main logic of the project"""
+    logger = makelogger(
+        makepath(os.path.join(cfg.work_dir, f"{cfg.expr_ID}.log"), isfile=True)
+    )
+    logger.info(f"[{cfg.expr_ID}] - ML-Higgs experiment has started!")
     train_data, test_data = prepare_data(cfg)
 
     # run the training and evaluation of the models
     run_training(cfg, train_data, test_data)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Train-ML-Higgs')
-    parser.add_argument('--data-path', required=True, type=str,
-                        help='Path to the folder with data')
-    parser.add_argument('--work-dir', required=True, type=str,
-                        help='Path to the working directory where the results will be saved')
-    parser.add_argument('--expr-ID', default='V00', type=str,
-                        help='Training ID')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train-ML-Higgs")
+    parser.add_argument(
+        "--data-path", required=True, type=str, help="Path to the folder with data"
+    )
+    parser.add_argument(
+        "--work-dir",
+        required=True,
+        type=str,
+        help="Path to the working directory where the results will be saved",
+    )
+    parser.add_argument("--expr-ID", default="V00", type=str, help="Training ID")
 
     cwd = os.getcwd()
-    default_cfg_path = os.path.join(cwd, 'configs/training_cfg.yaml')
+    default_cfg_path = os.path.join(cwd, "configs/training_cfg.yaml")
 
     args = parser.parse_args()
     config = {
-        'dataset_dir': args.data_path,
-        'expr_ID': args.expr_ID,
-        'work_dir': os.path.join(args.work_dir, args.expr_ID),
-        'model_selection':
-            {'mean_squared_error_gd': True,
-             'mean_squared_error_sgd': False,
-             'least_squares': False,
-             'ridge_regression': False,
-             'logistic_regression': False,
-             'reg_logistic_regression': False,
-             'logistic_regression_bfgs': False,
-             'reg_logistic_regression_bfgs': False,
-             },
-        'n_epochs': 200,
-        'grid_search': True,
-        'cross_validation': False,
-        'polynomial_features': False,
+        "dataset_dir": args.data_path,
+        "expr_ID": args.expr_ID,
+        "work_dir": os.path.join(args.work_dir, args.expr_ID),
+        "model_selection": {
+            "mean_squared_error_gd": True,
+            "mean_squared_error_sgd": False,
+            "least_squares": False,
+            "ridge_regression": False,
+            "logistic_regression": False,
+            "reg_logistic_regression": False,
+            "logistic_regression_bfgs": False,
+            "reg_logistic_regression_bfgs": False,
+        },
+        "n_epochs": 200,
+        "grid_search": True,
+        "cross_validation": False,
+        "polynomial_features": False,
     }
 
     config = Config(default_cfg_path=default_cfg_path, **config)
