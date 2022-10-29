@@ -58,10 +58,10 @@ def kfold_cross_validation(data, folds_num=5):
 
 def prepare_gs(init_gamma, final_gamma, gamma_decay, _lambda, poly_degree):
     """ Prepare the grid search hyperparam matrix """
-    dimensions = len(init_gamma) * len(final_gamma) * len(gamma_decay) * len(_lambda) * len(poly_degree)
+    dims = len(init_gamma) * len(final_gamma) * len(gamma_decay) * len(_lambda) * len(poly_degree)
     a, b, c, d, e = np.meshgrid(init_gamma, final_gamma, gamma_decay, _lambda, poly_degree)
-    a, b, c, d, e = np.reshape(a, (dimensions, -1)), np.reshape(b, (dimensions, -1)), np.reshape(c, (dimensions, -1)), \
-                    np.reshape(d, (dimensions, -1)), np.reshape(e, (dimensions, -1))
+    a, b, c, d, e = np.reshape(a, (dims, -1)), np.reshape(b, (dims, -1)), np.reshape(c, (dims, -1)), \
+                    np.reshape(d, (dims, -1)), np.reshape(e, (dims, -1))
     hyperparam_matrix = np.concatenate((a, b, c, d, e), axis=1)
     return hyperparam_matrix
 
@@ -80,6 +80,14 @@ def compute_gradient_LS(y, tx, w):
     err = y - tx.dot(w)
     grad = -tx.T.dot(err) / len(err)
     return grad, err
+
+
+def compute_gradient_MSE(y, tx, w):
+    """ Compute gradient and MSE loss """
+    e = y - tx.dot(w)
+    grad = - np.transpose(tx).dot(e) / len(tx)
+    loss = e.dot(e) / (2 * len(tx))
+    return grad, loss
 
 
 def compute_gradient_LR(tx, y_true, y_pred):
