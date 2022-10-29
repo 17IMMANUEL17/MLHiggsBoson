@@ -7,14 +7,13 @@ from datetime import datetime
 import numpy as np
 
 from core.costs import sigmoid
-from core.implementations import (least_squares, least_squares_GD,
-                                  least_squares_SGD, logistic_regression,
-                                  logistic_regression_bfgs, prepare_gs,
+from core.implementations import (least_squares, mean_squared_error_gd,
+                                  mean_squared_error_sgd, logistic_regression,
                                   reg_logistic_regression,
-                                  reg_logistic_regression_bfgs,
                                   ridge_regression)
+from core.supplementary_implementations import logistic_regression_bfgs, reg_logistic_regression_bfgs
 from tools.cfg_parser import Config
-from tools.helpers import build_poly, kfold_cross_validation
+from tools.helpers import build_poly, kfold_cross_validation, prepare_gs
 from tools.utils import create_submission
 
 
@@ -63,7 +62,7 @@ def run_training(cfg, train_data, test_data, num_folds=5):
                     w_initial = np.zeros((x_train.shape[1]))
 
                     # run the actual training loop
-                    loss, w = train(cfg, fold, hyperparams[i, :], model, w_initial, x_train, y_train)
+                    w, loss = train(cfg, fold, hyperparams[i, :], model, w_initial, x_train, y_train)
 
                     # run evaluation on the val data
                     accuracy_eval = evaluate(model, w, x_val, y_val)
@@ -97,12 +96,12 @@ def train(cfg, fold, trial_hyperparams, model_name, w_initial, x_train, y_train)
     logging.info(f'Training the model: {model_name} for fold {fold} - started training at {start_time}')
 
     # select and train the model based on the given model_name
-    loss, w = choose_model(model_name, y_train, x_train, _lambda, w_initial, cfg.n_epochs, init_gamma)
+    w, loss = choose_model(model_name, y_train, x_train, _lambda, w_initial, cfg.n_epochs, init_gamma)
 
     end_time = datetime.now().replace(microsecond=0)
     execution_time = (end_time - start_time).total_seconds()
     logging.info(f'Training of the model {model_name} for fold {fold} finished in {execution_time} seconds \n')
-    return loss, w
+    return w, loss
 
 
 def evaluate(model_name, w, x_val, y_val):
@@ -188,37 +187,37 @@ def choose_best_result(cfg, hyperparams, hyperparam_acc, hyperparam_pred, model,
 def choose_model(model_name, y_train, x_train, lambda_, w_initial, max_iters, gamma):
     """ Choose and train the model based on the given model_name """
 
-    if model_name == 'least_squares_GD':
-        # the best degree for least_squares_GD=2
-        loss, w = least_squares_GD(y_train, x_train, w_initial, max_iters, gamma)
+    if model_name == 'mean_squared_error_gd':
+        # the best degree for mean_squared_error_gd=2
+        w, loss = mean_squared_error_gd(y_train, x_train, w_initial, max_iters, gamma)
 
-    elif model_name == 'least_squares_SGD':
-        # the best degree for least_squares_SGD=1, in this case we are adding the bias term using a batch_size
+    elif model_name == 'mean_squared_error_sgd':
+        # the best degree for mean_squared_error_sgd=1, in this case we are adding the bias term using a batch_size
         # greater than 1 (batch_size=1 as a requirement) we should use degree 2
-        loss, w = least_squares_SGD(y_train, x_train, w_initial, max_iters, gamma)
+        w, loss = mean_squared_error_sgd(y_train, x_train, w_initial, max_iters, gamma)
 
     elif model_name == 'least_squares':
         # the best degree for least_squares=1, in this case we are adding the bias term
-        loss, w = least_squares(y_train, x_train)
+        w, loss = least_squares(y_train, x_train)
 
     elif model_name == 'ridge_regression':
         # the best experimental degree for ridge_regression=3
-        loss, w = ridge_regression(y_train, x_train, lambda_)
+        w, loss = ridge_regression(y_train, x_train, lambda_)
 
     elif model_name == 'logistic_regression':
         # the best experimental degree for logistic_regression=3
-        loss, w = logistic_regression(y_train, x_train, w_initial, max_iters, gamma)
+        w, loss = logistic_regression(y_train, x_train, w_initial, max_iters, gamma)
 
     elif model_name == 'reg_logistic_regression':
         # the best experimental degree for reg_logistic_regression=3
-        loss, w = reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
+        w, loss = reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
 
     elif model_name == 'logistic_regression_bfgs':
         # the best experimental degree for logistic_regression=3
-        loss, w = logistic_regression_bfgs(y_train, x_train, w_initial, max_iters, gamma)
+        w, loss = logistic_regression_bfgs(y_train, x_train, w_initial, max_iters, gamma)
 
     elif model_name == 'reg_logistic_regression_bfgs':
         # the best experimental degree for reg_logistic_regression=3
-        loss, w = reg_logistic_regression_bfgs(y_train, x_train, lambda_, w_initial, max_iters, gamma)
+        w, loss = reg_logistic_regression_bfgs(y_train, x_train, lambda_, w_initial, max_iters, gamma)
 
-    return loss, w
+    return w, loss

@@ -37,19 +37,19 @@ if __name__ == '__main__':
         'expr_ID': args.expr_ID,
         'work_dir': os.path.join(args.work_dir, args.expr_ID),
         'model_selection':
-            {'least_squares_GD': False,
-             'least_squares_SGD': False,
+            {'mean_squared_error_gd': False,
+             'mean_squared_error_sgd': False,
              'least_squares': False,
-             'ridge_regression': False,
+             'ridge_regression': True,
              'logistic_regression': False,
-             'reg_logistic_regression': False,
+             'reg_logistic_regression': True,
              'logistic_regression_bfgs': False,
-             'reg_logistic_regression_bfgs': True,
+             'reg_logistic_regression_bfgs': False,
              },
         'n_epochs': 200,
         'grid_search': True,
         'cross_validation': False,
-        'polynomial_features': False
+        'polynomial_features': False,
     }
 
     config = Config(default_cfg_path=default_cfg_path, **config)
