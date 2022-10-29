@@ -3,6 +3,70 @@ import logging
 import numpy as np
 
 from core.costs import log_likelihood_loss, sigmoid
+from tools.helpers import compute_gradient_LR
+
+
+def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
+    """ Logistic regression using bfgs algorithm (y ∈ {0, 1})
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        initial_w: shape=(D, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of GD
+        gamma: a scalar denoting the stepsize
+
+    Returns:
+        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
+        ws: a list of length max_iters containing the model parameters
+            as numpy arrays of shape (D, ), for each iteration of GD
+    """
+    bfgs = BFGS(initial_w.shape[0], 0.5, 0.1)
+    step_function = bfgs.step
+    # Define parameters to store w and loss
+    ws = [initial_w]
+    losses = []
+    w = initial_w
+    for n_iter in range(max_iters):
+        w, loss = step_function(w, tx, y, gamma)
+
+        # store w and loss
+        ws.append(w)
+        losses.append(loss)
+        logging.info("Logistic Regression BFGS ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    return w, loss
+
+
+def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
+    """ Regularized logistic regression using bfgs algorithm (y ∈ {0, 1}, with regularization term λ||w||^2)
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        lambda_: scalar, regularization term
+        initial_w: shape=(D, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of GD
+        gamma: a scalar denoting the stepsize
+
+    Returns:
+        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
+        ws: a list of length max_iters containing the model parameters
+            as numpy arrays of shape (D, ), for each iteration of GD
+    """
+    bfgs = BFGS(initial_w.shape[0], 0.5, 0.1)
+    step_function = bfgs.step
+    # Define parameters to store w and loss
+    ws = [initial_w]
+    losses = []
+    w = initial_w
+    for n_iter in range(max_iters):
+        w, loss = step_function(w, tx, y, gamma, lambda_=lambda_)
+
+        # store w and loss
+        ws.append(w)
+        losses.append(loss)
+        logging.info("Reg Logistic Regression BFGS({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    return w, loss
 
 
 def evaluate_armijo_rule(f_x, f_x1, p, grad, c, alpha):
@@ -70,22 +134,7 @@ def backtracking_line_search(p, grad, w, gamma, beta, c, f, *arg):
     return alpha
 
 
-def LR_compute_gradient(tx, y_true, y_pred):
-    # This is implemented here as well to avoid circular imports
-    # when we put bfgs in the implementations.py file, we can remove this
-    """
-    Compute the gradient.
-    Args:
-        tx: numpy array of shape (N,D), D is the number of features.
-        y_true: true labels, numpy array of shape (N,)
-        y_pred: predicted labels, numpy array of shape (N,)
-    Returns:
-        grad: gradient, numpy array of shape (D,)
-    """
-    return tx.T.dot(y_pred - y_true) / len(y_true)
-
-
-def LR_optimization_objective(w, tx, y, lambda_=0.0):
+def optimization_objective_LR(w, tx, y, lambda_=0.0):
     y_pred = sigmoid(tx @ w)
     loss = log_likelihood_loss(y, y_pred, w, lambda_)
     return loss
@@ -142,15 +191,15 @@ class BFGS:
             return w, loss
         self.prev_obj = loss
 
-        grad = LR_compute_gradient(tx, y, y_pred).reshape(-1, 1) + 2 * lambda_ * w
+        grad = compute_gradient_LR(tx, y, y_pred).reshape(-1, 1) + 2 * lambda_ * w
         pk = - self.inv_B @ grad  # (D,)
 
         alpha = backtracking_line_search(pk, grad, w, gamma, self.beta, self.c,
-                                         LR_optimization_objective, tx, y, lambda_)
+                                         optimization_objective_LR, tx, y, lambda_)
         sk = alpha * pk  # (D,)
         w = w + sk
 
-        next_grad = LR_compute_gradient(tx, y, sigmoid(tx.dot(w))) + 2 * lambda_ * w
+        next_grad = compute_gradient_LR(tx, y, sigmoid(tx.dot(w))) + 2 * lambda_ * w
         yk = (next_grad - grad).reshape(-1, 1)  # (D,1)
         self.update_inverse_approximate_hessian_matrix(sk, yk)
 
