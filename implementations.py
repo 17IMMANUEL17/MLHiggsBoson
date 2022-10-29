@@ -4,8 +4,9 @@ import logging
 
 import numpy as np
 
-from core.costs import compute_loss, sigmoid, log_likelihood_loss
-from tools.helpers import batch_iter, compute_gradient_LS, logistic_regression_GD_step
+from core.costs import compute_loss, log_likelihood_loss, sigmoid
+from tools.helpers import (batch_iter, compute_gradient_LS,
+                           logistic_regression_GD_step)
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
