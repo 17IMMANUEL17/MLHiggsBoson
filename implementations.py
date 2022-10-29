@@ -27,7 +27,6 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     ws = [initial_w]
     losses = []
     w = initial_w
-    loss = 0
     for n_iter in range(max_iters):
         # compute loss, gradient
         grad, err = compute_gradient_LS(y, tx, w)
@@ -38,6 +37,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         ws.append(w)
         losses.append(loss)
         logging.info("Least Squares GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = losses[-1]
     return w, loss
 
 
@@ -56,7 +56,6 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     ws = [initial_w]
     losses = []
     w = initial_w
-    loss = 0
     for n_iter in range(max_iters):
         # batch_size=1 is a project requirement
         for y_batch, tx_batch in batch_iter(y, tx, batch_size=1, num_batches=1):
@@ -71,6 +70,7 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
             losses.append(loss)
 
         logging.info("Least Squares SGD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = losses[-1]
     return w, loss
 
 
@@ -133,7 +133,6 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     ws = [initial_w]
     losses = []
     w = initial_w
-    loss = 0
     for n_iter in range(max_iters):
         w, loss = step_function(w, tx, y, gamma)
 
@@ -142,6 +141,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         losses.append(loss)
         logging.info("Logistic Regression GD ({bi}/{ti}): loss={l}".format(
             bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = losses[-1]
     return w, loss
 
 
@@ -167,7 +167,6 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     ws = [initial_w]
     losses = []
     w = initial_w
-    loss = 0
     for n_iter in range(max_iters):
         w, loss = step_function(w, tx, y, gamma, lambda_)
 
@@ -175,5 +174,5 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         ws.append(w)
         losses.append(loss)
         logging.info("Reg Logistic Regression GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
-
+    loss = losses[-1]
     return w, loss
