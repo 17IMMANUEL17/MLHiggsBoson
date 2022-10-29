@@ -100,7 +100,7 @@ def compute_gradient_LR(tx, y_true, y_pred):
     Returns:
         grad: gradient of loss, numpy array of shape (D,)
     """
-    return tx.T.dot(y_pred - y_true) / len(y_true)
+    return tx.T.dot(y_pred - y_true)
 
 
 def logistic_regression_GD_step(w, tx, y, gamma, lambda_=0):
