@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 
-from core.costs import compute_loss
+from core.costs import compute_loss, sigmoid, log_likelihood_loss
 from tools.helpers import (batch_iter, compute_gradient_LS, logistic_regression_GD_step)
 
 
@@ -135,6 +135,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         ws.append(w)
         losses.append(loss)
         logging.info("Logistic Regression GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
     return w, loss
 
 
@@ -167,4 +168,5 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         ws.append(w)
         losses.append(loss)
         logging.info("Reg Logistic Regression GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
     return w, loss

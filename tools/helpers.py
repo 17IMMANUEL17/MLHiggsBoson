@@ -103,6 +103,7 @@ def logistic_regression_GD_step(w, tx, y, gamma, lambda_=0):
         tx: numpy array of shape (N,D), N is the number of samples.
         y: numpy array of shape (N,), true labels.
         gamma: scalar.
+        lambda_: scalar.
 
     Returns:
         grad: gradient of loss, numpy array of shape (D,)
@@ -110,7 +111,7 @@ def logistic_regression_GD_step(w, tx, y, gamma, lambda_=0):
     # compute loss, gradient
     y_pred = sigmoid(tx.dot(w))
     grad = compute_gradient_LR(tx, y, y_pred) + 2 * lambda_ * w
-    loss = log_likelihood_loss(y, y_pred, w, lambda_)
+    loss = log_likelihood_loss(y, y_pred)
 
     # gradient w by descent update
     w = w - gamma * grad

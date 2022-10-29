@@ -34,6 +34,8 @@ def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
         ws.append(w)
         losses.append(loss)
         logging.info("Logistic Regression BFGS ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    y.shape = (y.shape[0], 1)
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
     return w, loss
 
 
@@ -66,6 +68,7 @@ def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
         ws.append(w)
         losses.append(loss)
         logging.info("Reg Logistic Regression BFGS({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = log_likelihood_loss(y, sigmoid(tx.dot(w)))
     return w, loss
 
 
@@ -134,9 +137,24 @@ def backtracking_line_search(p, grad, w, gamma, beta, c, f, *arg):
     return alpha
 
 
-def optimization_objective_LR(w, tx, y, lambda_=0.0):
+def LR_compute_gradient(tx, y_true, y_pred):
+    # This is implemented here as well to avoid circular imports
+    # when we put bfgs in the implementations.py file, we can remove this
+    """
+    Compute the gradient.
+    Args:
+        tx: numpy array of shape (N,D), D is the number of features.
+        y_true: true labels, numpy array of shape (N,)
+        y_pred: predicted labels, numpy array of shape (N,)
+    Returns:
+        grad: gradient, numpy array of shape (D,)
+    """
+    return tx.T.dot(y_pred - y_true) / len(y_true)
+
+
+def LR_optimization_objective(w, tx, y):
     y_pred = sigmoid(tx @ w)
-    loss = log_likelihood_loss(y, y_pred, w, lambda_)
+    loss = log_likelihood_loss(y, y_pred)
     return loss
 
 
@@ -194,13 +212,13 @@ class BFGS:
         grad = compute_gradient_LR(tx, y, y_pred).reshape(-1, 1) + 2 * lambda_ * w
         pk = - self.inv_B @ grad  # (D,)
 
+
         alpha = backtracking_line_search(pk, grad, w, gamma, self.beta, self.c,
-                                         optimization_objective_LR, tx, y, lambda_)
+                                         LR_optimization_objective, tx, y)
         sk = alpha * pk  # (D,)
         w = w + sk
 
-        next_grad = compute_gradient_LR(tx, y, sigmoid(tx.dot(w))) + 2 * lambda_ * w
+        next_grad = LR_compute_gradient(tx, y, sigmoid(tx.dot(w))) + 2 * lambda_ * w
         yk = (next_grad - grad).reshape(-1, 1)  # (D,1)
         self.update_inverse_approximate_hessian_matrix(sk, yk)
-
         return w, loss

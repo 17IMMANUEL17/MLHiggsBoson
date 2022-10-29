@@ -69,8 +69,8 @@ def run_training(cfg, train_data, test_data, num_folds=5):
                     acc.append(accuracy_eval)
         
                     # run evaluation on the test data
-                    if model == 'logistic_regression' or model == 'reg_logistic_regression':
-                        pred_test = np.round(sigmoid(x_test.dot(w.T)))
+                    if 'logistic_regression' in model:
+                        pred_test = np.round(sigmoid(x_test.dot(w.reshape(-1, 1))))
                     else:
                         pred_test = np.round(x_test.dot(w))
                     pred.append(pred_test)
