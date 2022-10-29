@@ -35,6 +35,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         ws.append(w)
         losses.append(loss)
         logging.info("Least Squares Gradient Descent({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = compute_loss(y, tx, w)
     return w, loss
 
 
@@ -64,8 +65,8 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
             # store w and loss
             ws.append(w)
             losses.append(loss)
-
         logging.info("Least Squares SGD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    loss = compute_loss(y, tx, w)
     return w, loss
 
 
