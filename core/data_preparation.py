@@ -1,8 +1,9 @@
 """ Main logic for the data preparation """
 
-import os
-import numpy as np
 import logging
+import os
+
+import numpy as np
 
 from core.data_preprocessing import preprocess_data
 

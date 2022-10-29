@@ -1,9 +1,11 @@
 """ Implementation of the Machine Learning methods """
 
 import logging
+
 import numpy as np
 
-from core.costs import calculate_mae, calculate_mse, compute_loss, sigmoid, log_likelihood_loss
+from core.costs import (calculate_mae, calculate_mse, compute_loss,
+                        log_likelihood_loss, sigmoid)
 from core.linesearch import BFGS
 from tools.helpers import batch_iter
 

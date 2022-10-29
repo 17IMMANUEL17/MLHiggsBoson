@@ -1,7 +1,8 @@
 import logging
+
 import numpy as np
 
-from core.costs import sigmoid, log_likelihood_loss
+from core.costs import log_likelihood_loss, sigmoid
 
 
 def evaluate_armijo_rule(f_x, f_x1, p, grad, c, alpha):
@@ -62,8 +63,8 @@ def backtracking_line_search(p, grad, w, gamma, beta, c, f, *arg):
     w_new = w.copy()
     w_new = w + alpha * p
     f_x = f(w, *arg)
-    while not evaluate_armijo_rule(f_x, f(w_new, *arg), 
-                                    p, grad, c, alpha):
+    while not evaluate_armijo_rule(f_x, f(w_new, *arg),
+                                   p, grad, c, alpha):
         alpha = beta * alpha
         w_new = w + alpha * p
     return alpha
@@ -103,6 +104,7 @@ class BFGS:
         step: compute the step size for gradient that satisfies the armijo condition
 
     '''
+
     def __init__(self, dim, beta, c):
         self.inv_B = np.identity(dim)
         self.beta = beta
@@ -121,8 +123,8 @@ class BFGS:
                 y_k = grad(f(w_{k+1})) - grad(f(w_{k})), the difference in gradients at two consecutive iterations.
         '''
         inv_B_new = self.inv_B.copy()
-        sty = (sk.T @ yk).item() # scalar
-        inv_B_new = self.inv_B +  (sty + (yk.T @ self.inv_B @ yk).item()) / (sty * sty) * (sk @ sk.T) -\
+        sty = (sk.T @ yk).item()  # scalar
+        inv_B_new = self.inv_B + (sty + (yk.T @ self.inv_B @ yk).item()) / (sty * sty) * (sk @ sk.T) - \
                     (self.inv_B @ yk @ sk.T + sk @ yk.T @ self.inv_B) / sty
         self.inv_B = inv_B_new
 
@@ -141,15 +143,15 @@ class BFGS:
         self.prev_obj = loss
 
         grad = LR_compute_gradient(tx, y, y_pred).reshape(-1, 1) + 2 * lambda_ * w
-        pk = - self.inv_B @ grad # (D,) 
+        pk = - self.inv_B @ grad  # (D,)
 
-        alpha = backtracking_line_search(pk, grad, w, gamma, self.beta, self.c, 
+        alpha = backtracking_line_search(pk, grad, w, gamma, self.beta, self.c,
                                          LR_optimization_objective, tx, y, lambda_)
-        sk = alpha * pk # (D,)
+        sk = alpha * pk  # (D,)
         w = w + sk
 
         next_grad = LR_compute_gradient(tx, y, sigmoid(tx.dot(w))) + 2 * lambda_ * w
-        yk = (next_grad - grad).reshape(-1, 1) # (D,1)
+        yk = (next_grad - grad).reshape(-1, 1)  # (D,1)
         self.update_inverse_approximate_hessian_matrix(sk, yk)
 
         return w, loss

@@ -1,6 +1,7 @@
 """ Parse configuration file """
 
 import os
+
 import yaml
 
 from tools.utils import makepath

@@ -3,9 +3,9 @@
 import argparse
 import os
 
-from tools.cfg_parser import Config
 from core.data_preparation import prepare_data
 from core.trainer import run_training
+from tools.cfg_parser import Config
 from tools.utils import makelogger, makepath
 
 

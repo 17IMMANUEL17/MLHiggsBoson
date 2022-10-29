@@ -1,8 +1,8 @@
 """ General purpose utility functions to limit duplication of code """
 
 import csv
-import os
 import logging
+import os
 
 
 def makepath(desired_path, isfile=False):

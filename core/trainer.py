@@ -1,15 +1,20 @@
 """ Main logic for the training """
 
 import logging
-import numpy as np
-from datetime import datetime
 import os
+from datetime import datetime
 
-from core.implementations import least_squares_GD, logistic_regression, reg_logistic_regression, ridge_regression, \
-    least_squares_SGD, least_squares, logistic_regression_bfgs, reg_logistic_regression_bfgs, prepare_gs
+import numpy as np
+
 from core.costs import sigmoid
-from tools.helpers import kfold_cross_validation, build_poly
+from core.implementations import (least_squares, least_squares_GD,
+                                  least_squares_SGD, logistic_regression,
+                                  logistic_regression_bfgs, prepare_gs,
+                                  reg_logistic_regression,
+                                  reg_logistic_regression_bfgs,
+                                  ridge_regression)
 from tools.cfg_parser import Config
+from tools.helpers import build_poly, kfold_cross_validation
 from tools.utils import create_submission
 
 
@@ -126,8 +131,8 @@ def choose_hyperparams(cfg):
         np.array([[initial_gamma, final_gamma, gamma_decay, _lambda, poly_degree]]) """
     if cfg.grid_search:
         logging.info(f'Running the hyperparameter Grid Search!')
-        init_gamma = [0.05, 0.1, 0.2]
-        final_gamma = [0.0005, 0.001]
+        init_gamma = [0.01, 0.05, 0.1, 0.2]
+        final_gamma = [0.001, 0.0005, 0.0001]
         gamma_decay = [0.3, 0.5, 0.7]
         _lambda = [0.05, 0.1, 0.2]
         poly_degree = [1, 2, 3, 4, 5]
@@ -137,7 +142,7 @@ def choose_hyperparams(cfg):
         init_gamma = 0.01
         final_gamma = 0.0001
         gamma_decay = 0.5
-        _lambda = 1e-4
+        _lambda = 0.1
         poly_degree = 2 if cfg.polynomial_features else 0
         hyperparams = np.array([[init_gamma, final_gamma, gamma_decay, _lambda, poly_degree]])
     return hyperparams
