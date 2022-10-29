@@ -3,10 +3,9 @@
 import logging
 import numpy as np
 
-from core.costs import calculate_mae, calculate_mse, compute_loss,\
-                        sigmoid, log_likelihood_loss 
+from core.costs import calculate_mae, calculate_mse, compute_loss, sigmoid, log_likelihood_loss
 from core.linesearch import BFGS
-from tools.helpers import batch_iter, kfold_cross_validation
+from tools.helpers import batch_iter
 
 
 def compute_gradient_LS(y, tx, w):
@@ -21,7 +20,7 @@ def compute_gradient_LS(y, tx, w):
         An array of shape (D, ) (same shape as w), containing the gradient of the loss at w.
     """
     err = y - tx.dot(w)
-    grad = -tx.T.dot(err)/len(err)
+    grad = -tx.T.dot(err) / len(err)
     return grad, err
 
 
@@ -61,13 +60,12 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
         grad, err = compute_gradient_LS(y, tx, w)
         loss = calculate_mse(err)
         # gradient w by descent update
-        w -= gamma * grad
+        w = w - gamma * grad
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("least_square_Gradient Descent({bi}/{ti}): loss={l}".format(
-            bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+        logging.info("Least Squares GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    return loss, w
 
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
@@ -81,28 +79,26 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     Returns:
         An array of shape (D, ) (same shape as w), containing the stochastic gradient of the loss at w.
     """
-    
 
     ws = [initial_w]
     losses = []
     w = initial_w
 
     for n_iter in range(max_iters):
-        #batch_size=1 as in the requirements
-        for y_batch, tx_batch in batch_iter(y, tx, 1, num_batches=1):
+        # batch_size=1 is a project requirement
+        for y_batch, tx_batch in batch_iter(y, tx, batch_size=1, num_batches=1):
             # compute a stochastic gradient and loss
             grad, _ = compute_gradient_LS(y_batch, tx_batch, w)
             # update w through the stochastic gradient update
-            w -= gamma * grad
+            w = w - gamma * grad
             # calculate loss
             loss = compute_loss(y, tx, w)
             # store w and loss
             ws.append(w)
             losses.append(loss)
 
-        logging.info("least_squares_SGD({bi}/{ti}): loss={l}".format(
-            bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+        logging.info("Least Squares SGD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    return loss, w
 
 
 def least_squares(y, tx):
@@ -193,9 +189,9 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("logistic_regression_Gradient Descent({bi}/{ti}): loss={l}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+        logging.info("Logistic Regression GD ({bi}/{ti}): loss={l}".format(
+            bi=n_iter, ti=max_iters - 1, l=loss))
+    return loss, w
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
@@ -226,9 +222,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("reg_logistic_regression_Gradient Descent({bi}/{ti}): loss={l}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+        logging.info("Reg Logistic Regression GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    return loss, w
 
 
 def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
@@ -258,9 +253,8 @@ def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("logistic_regression_BFGS({bi}/{ti}): loss={l}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+        logging.info("Logistic Regression BFGS ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    return loss, w
 
 
 def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
@@ -291,124 +285,15 @@ def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
         # store w and loss
         ws.append(w)
         losses.append(loss)
-        logging.info("reg_logistic_regression_BFGS({bi}/{ti}): loss={l}".format(
-              bi=n_iter, ti=max_iters - 1, l=loss))
-    return losses, ws
+        logging.info("Reg Logistic Regression BFGS({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+    return loss, w
 
 
-def hyperparams_gs(model_name,cfg, train_data):
-    # auxiliary function: I don't delete it since it depends on how you want to refactor the code and on Mirali's implementations but\
-    # right now we could just use directly the function get_best_lambda in the trainer. Originally I have used this function because \
-    # if we want to generalize the hyperparameters grid search we have different hyperparameters between models. BTW I have done the \
-    # degree grid search manually  so now it is basically useless unless it is necessary for Mirali's implementation ( but I think that \
-    # we could also use Mirali's learning rate optimization in the trainer)
-    if model_name == 'least_squares_GD':
-        initial_gamma = 0.01
-        final_gamma = 0.0001
-        gamma_decay = 0.5
-        _lambda = 0.01
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    elif model_name == 'least_squares_SGD':
-        initial_gamma = 0.01
-        final_gamma = 0.0001
-        gamma_decay = 0.5
-        _lambda = 0.01
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    elif model_name == 'least_squares':
-        initial_gamma = 0.01
-        final_gamma = 0.0001
-        gamma_decay = 0.5
-        _lambda = 0.01
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    elif model_name == 'ridge_regression':
-        initial_gamma = 0.01
-        final_gamma = 0.0001
-        gamma_decay = 0.5
-        _lambda = get_best_lambda(model_name, train_data)
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    elif model_name == 'logistic_regression':
-        initial_gamma = 0.01
-        final_gamma = 0.0001
-        gamma_decay = 0.5
-        _lambda = 0.01
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    elif model_name == 'reg_logistic_regression':
-        initial_gamma = 0.01
-        final_gamma = 0.0001
-        gamma_decay = 0.5
-        _lambda = get_best_lambda(model_name, train_data)
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    elif model_name == "logistic_regression_bfgs":
-        initial_gamma = 1
-        final_gamma = 0.001
-        gamma_decay = 0.5
-        _lambda = 0.01
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    elif model_name == 'reg_logistic_regression_bfgs':
-        initial_gamma = 1
-        final_gamma = 0.001
-        gamma_decay = 0.5
-        _lambda = get_best_lambda(model_name, train_data)
-        hyperparams = np.array([[initial_gamma, final_gamma, gamma_decay, _lambda]])
-
-    return hyperparams        
-
-def get_best_lambda(model_name, train_data, num_folds=5):
-    """Grid search with k-fold cross validation on different values of lambda to find the best lambda.
-
-    Args:
-        model_name: ztring containing the name of the model we are optimizing lambda for.
-        train_data: numpy array of shape (N,D) that contains the training data.
-        num_folds: number of fold in which we are dividing the training data to do k-fold cross validation.
-
-    Returns:
-        a float that is the best lambda obtained for the analyzed model.
-    """
-    val_idx, train_ifx = kfold_cross_validation(train_data["x_train"], num_folds)
-    lambdas = np.logspace(-4, 0, 10)
-    # define lists to store the loss of test data
-    # cross validation
-    logging.info("Running the grid search on lambda!")
-    for i, lambda_ in enumerate(lambdas):
-        logging.info(f"Evaluating  {i+1}/{len(lambdas)}")
-        rmse_test_tmp = []
-        rmse_test=[]
-        for val_fold, train_fold in zip(val_idx[:num_folds], train_ifx[:num_folds]):
-            x_test = np.array(train_data["x_train"])[np.array(val_fold)]
-            y_test = np.array(train_data["y_train"])[np.array(val_fold)]
-            x_train = np.array(train_data["x_train"])[np.array(train_fold)]
-            y_train = np.array(train_data["y_train"])[np.array(train_fold)]
-            if model_name == 'ridge_regression':
-                _,w = ridge_regression(y_train, x_train, lambda_)
-                loss_test = np.sqrt(2 * compute_loss(y_test, x_test, w))
-            elif model_name == 'reg_logistic_regression':
-                w_initial = np.zeros((x_train.shape[1]))
-                gamma=0.1
-                max_iters=100
-                _, ws= reg_logistic_regression(y_train, x_train, lambda_, w_initial, max_iters, gamma)
-                w = ws[-1]
-                y_pred = sigmoid(x_test.dot(w))
-                loss_test = log_likelihood_loss(y_test, y_pred, w, lambda_)
-            elif model_name == 'reg_logistic_regression_bfgs':
-                w_initial = np.zeros((x_train.shape[1]))
-                gamma = 1
-                max_iters=200
-                _, ws= reg_logistic_regression_bfgs(y_train, x_train, lambda_, w_initial, max_iters, gamma)
-                w = ws[-1]
-                y_pred = sigmoid(x_test.dot(w)).reshape(-1, 1)
-                y_test = y_test.reshape(-1, 1)
-                loss_test = log_likelihood_loss(y_test, y_pred, w, lambda_)
-            rmse_test_tmp.append(loss_test)
-        rmse_test.append(np.mean(rmse_test_tmp))
-    ind_lambda = np.argmin(rmse_test)
-    logging.info("Best lambda for model {i} = {x}!".format(
-              i=model_name, x=lambdas[ind_lambda]))
-
-    return lambdas[ind_lambda]
+def prepare_gs(init_gamma, final_gamma, gamma_decay, _lambda, poly_degree):
+    """ Prepare the grid search hyperparam matrix """
+    dimensions = len(init_gamma) * len(final_gamma) * len(gamma_decay) * len(_lambda) * len(poly_degree)
+    a, b, c, d, e = np.meshgrid(init_gamma, final_gamma, gamma_decay, _lambda, poly_degree)
+    a, b, c, d, e = np.reshape(a, (dimensions, -1)), np.reshape(b, (dimensions, -1)), np.reshape(c, (dimensions, -1)), \
+                    np.reshape(d, (dimensions, -1)), np.reshape(e, (dimensions, -1))
+    hyperparam_matrix = np.concatenate((a, b, c, d, e), axis=1)
+    return hyperparam_matrix

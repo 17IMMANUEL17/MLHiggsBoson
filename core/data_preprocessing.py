@@ -3,10 +3,9 @@
 import logging
 import numpy as np
 
-from tools.helpers import build_poly
 
 class Imputer:
-    '''
+    """
     Imputing the given values according to strategy
 
     Parameters:
@@ -19,7 +18,8 @@ class Imputer:
         fit: fit the imputer with the given data
         transform: transform the data according to the fitted imputer
         fit_transform: fit and transform the data
-    '''
+    """
+
     def __init__(self, missing_values=np.nan, strategy='mean', fill_value=None, axis=None):
         self.missing_values = missing_values
         self.fill_value = fill_value
@@ -29,7 +29,7 @@ class Imputer:
         elif strategy == "median":
             self.strategy = self.median_imputation
         elif strategy == "constant":
-            self.strategy = lambda x : None
+            self.strategy = lambda x: None
         else:
             logging.error("Invalid strategy for imputation")
             raise ValueError("Invalid strategy for imputation")
@@ -47,7 +47,7 @@ class Imputer:
             self.fill_value = np.nanmedian(x, axis=self.axis)
         else:
             self.fill_value = np.median(x[x != self.missing_values], axis=self.axis)
-    
+
     def fit(self, x):
         self.strategy(x)
 
@@ -95,7 +95,7 @@ def log_transform(data, columns):
 
 def remove_outliers(data, columns):
     """ Remove outliers from the data using the interquartile range method """
-    right, left = np.percentile(data[:, columns], [90 ,10], axis=0)
+    right, left = np.percentile(data[:, columns], [90, 10], axis=0)
     iqr = right - left
     min_value = left - 1.5 * iqr
     max_value = right + 1.5 * iqr
@@ -105,12 +105,9 @@ def remove_outliers(data, columns):
     return mask
 
 
-def preprocess_data(train_data, test_data):
+def preprocess_data(cfg, train_data, test_data):
     """ Data preprocessing, including feature engineering and normalization """
     logging.info(f'Starting data preprocessing!')
-
-    # data cleaning and feature engineering
-    # TODO: Inspect if any redundant features can be removed and do some feature engineering
 
     # replace -999 to nan
     nan_imputer = Imputer(missing_values=-999, strategy='constant', fill_value=np.nan)
@@ -145,9 +142,16 @@ def preprocess_data(train_data, test_data):
     cont_columns = np.arange(29)
 
     # normalize train/test data
-    train_data["x_train"][:, cont_columns], mean_train, std_train = normalize_data(train_data["x_train"][:, cont_columns])
-    test_data["x_test"][:, cont_columns], _, _ = normalize_data(test_data["x_test"][:, cont_columns], mean_train, std_train)
-    
+    train_data["x_train"][:, cont_columns], mean_train, std_train = normalize_data(
+        train_data["x_train"][:, cont_columns])
+    test_data["x_test"][:, cont_columns], _, _ = normalize_data(test_data["x_test"][:, cont_columns], mean_train,
+                                                                std_train)
+
+    # add bias term (skip when polynomial features are required because build_poly adds the bias term anyway)
+    if not cfg.polynomial_features:
+        train_data["x_train"] = add_bias(train_data["x_train"])
+        test_data["x_test"] = add_bias(test_data["x_test"])
+
     logging.info(f'Data preprocessed successfully!')
 
 

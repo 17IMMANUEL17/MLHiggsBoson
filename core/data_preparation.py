@@ -15,7 +15,7 @@ def prepare_data(cfg):
     train_data, test_data = dataloader(cfg.dataset_dir)
 
     # preprocess the data
-    preprocess_data(train_data, test_data)
+    preprocess_data(cfg, train_data, test_data)
     return train_data, test_data
 
 

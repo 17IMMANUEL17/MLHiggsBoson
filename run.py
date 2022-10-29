@@ -40,15 +40,16 @@ if __name__ == '__main__':
             {'least_squares_GD': False,
              'least_squares_SGD': False,
              'least_squares': False,
-             'ridge_regression':False,
+             'ridge_regression': False,
              'logistic_regression': False,
              'reg_logistic_regression': False,
              'logistic_regression_bfgs': False,
              'reg_logistic_regression_bfgs': True,
              },
         'n_epochs': 200,
-        'grid_search': False,
-        'cross_validation': True
+        'grid_search': True,
+        'cross_validation': False,
+        'polynomial_features': False
     }
 
     config = Config(default_cfg_path=default_cfg_path, **config)

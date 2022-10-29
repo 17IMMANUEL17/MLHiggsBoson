@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 
 from core.costs import sigmoid, log_likelihood_loss
@@ -107,8 +108,7 @@ class BFGS:
         self.beta = beta
         self.c = c
         self.prev_obj = None
-
-        print("BFGS method initialized")
+        logging.info('BFGS method initialized!')
 
     def update_inverse_approximate_hessian_matrix(self, sk, yk):
         '''

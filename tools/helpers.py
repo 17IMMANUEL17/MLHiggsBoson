@@ -11,7 +11,7 @@ def build_poly(x, degree):
     return poly
 
 
-def batch_iter(y, tx, batch_size, num_batches, shuffle = True) :
+def batch_iter(y, tx, batch_size, num_batches, shuffle=True):
     """Iterate through data in batches.
     Args:
         tx (np.ndarray): Features data
@@ -34,7 +34,7 @@ def batch_iter(y, tx, batch_size, num_batches, shuffle = True) :
     num_batches = num_batches or batches
 
     for i in range(num_batches):
-        yield y[i*batch_size:(i+1)*batch_size], tx[i*batch_size:(i+1)*batch_size]
+        yield y[i * batch_size:(i + 1) * batch_size], tx[i * batch_size:(i + 1) * batch_size]
 
 
 def kfold_cross_validation(data, folds_num=5):
@@ -45,7 +45,6 @@ def kfold_cross_validation(data, folds_num=5):
     # size of each fold
     fold_size = int(data.shape[0] / folds_num)
     for i in range(folds_num):
-
         test_fold = data_idx[i * fold_size: (i + 1) * fold_size]
         train_fold = np.delete(data_idx, test_fold)
 
@@ -53,4 +52,3 @@ def kfold_cross_validation(data, folds_num=5):
         train_idx.append(train_fold)
 
     return test_idx, train_idx
-
