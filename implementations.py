@@ -52,9 +52,8 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     Returns:
         An array of shape (D, ) (same shape as w), containing the stochastic gradient of the loss at w.
     """
-
     ws = [initial_w]
-    losses = []
+    losses = [np.inf]
     w = initial_w
     for n_iter in range(max_iters):
         # batch_size=1 is a project requirement
