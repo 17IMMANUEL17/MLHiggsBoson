@@ -1,6 +1,7 @@
 """ Helper functions for various purposes """
 
 import numpy as np
+
 from core.costs import log_likelihood_loss, sigmoid
 
 

@@ -7,11 +7,11 @@ from datetime import datetime
 import numpy as np
 
 from core.costs import sigmoid
-from implementations import (least_squares, mean_squared_error_gd,
-                             mean_squared_error_sgd, logistic_regression,
-                             reg_logistic_regression,
-                             ridge_regression)
-from core.supplementary_implementations import logistic_regression_bfgs, reg_logistic_regression_bfgs
+from core.supplementary_implementations import (logistic_regression_bfgs,
+                                                reg_logistic_regression_bfgs)
+from implementations import (least_squares, logistic_regression,
+                             mean_squared_error_gd, mean_squared_error_sgd,
+                             reg_logistic_regression, ridge_regression)
 from tools.cfg_parser import Config
 from tools.helpers import build_poly, kfold_cross_validation, prepare_gs
 from tools.utils import create_submission
