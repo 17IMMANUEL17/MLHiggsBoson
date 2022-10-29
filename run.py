@@ -47,7 +47,7 @@ if __name__ == "__main__":
             "mean_squared_error_sgd": True,
             "least_squares": True,
             "ridge_regression": True,
-            "logistic_regression": False,
+            "logistic_regression": True,
             "reg_logistic_regression": True,
             "logistic_regression_bfgs": True,
             "reg_logistic_regression_bfgs": True,
