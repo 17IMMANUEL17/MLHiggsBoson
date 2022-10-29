@@ -145,8 +145,6 @@ def backtracking_line_search(p, grad, w, gamma, beta, c, f, *arg):
 
 
 def LR_compute_gradient(tx, y_true, y_pred):
-    # This is implemented here as well to avoid circular imports
-    # when we put bfgs in the implementations.py file, we can remove this
     """
     Compute the gradient.
     Args:
