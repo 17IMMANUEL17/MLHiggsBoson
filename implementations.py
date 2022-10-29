@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 from core.costs import compute_loss
-from tools.helpers import (batch_iter, compute_gradient_LS, compute_gradient_MSE, logistic_regression_GD_step)
+from tools.helpers import (batch_iter, compute_gradient_LS, logistic_regression_GD_step)
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
@@ -23,14 +23,19 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters 
             as numpy arrays of shape (D, ), for each iteration of GD
     """
+    ws = [initial_w]
+    losses = []
     w = initial_w
     for n_iter in range(max_iters):
         # compute loss, gradient
-        grad, loss = compute_gradient_MSE(y, tx, w)
-        # gradient w by descent update
+        grad, err = compute_gradient_LS(y, tx, w)
         w = w - gamma * grad
+        loss = compute_loss(y, tx, w)
         # store w and loss
-        logging.info("Least Squares GD ({bi}/{ti}): loss={l}".format(bi=n_iter, ti=max_iters - 1, l=loss))
+        ws.append(w)
+        losses.append(loss)
+        logging.info("Least Squares Gradient Descent({bi}/{ti}): loss={l}".format(
+            bi=n_iter, ti=max_iters - 1, l=loss))
     return w, loss
 
 

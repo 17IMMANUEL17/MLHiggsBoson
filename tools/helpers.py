@@ -82,14 +82,6 @@ def compute_gradient_LS(y, tx, w):
     return grad, err
 
 
-def compute_gradient_MSE(y, tx, w):
-    """ Compute gradient and MSE loss """
-    e = y - tx.dot(w)
-    grad = - np.transpose(tx).dot(e) / len(tx)
-    loss = e.dot(e) / (2 * len(tx))
-    return grad, loss
-
-
 def compute_gradient_LR(tx, y_true, y_pred):
     """
     Compute the gradient of loss.
