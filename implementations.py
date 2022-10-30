@@ -19,9 +19,8 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         gamma: a scalar denoting the stepsize
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters
-            as numpy arrays of shape (D, ), for each iteration of GD
+        w: a numpy array of shape (D, ) containing the model parameters obtained by the last iteration of GD
+        loss: a float containing the loss value (scalar) associated to w
     """
     ws = [initial_w]
     losses = []
@@ -49,10 +48,13 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     Args:
         y: numpy array of shape (N,), N is the number of samples.
         tx: numpy array of shape (N,D), D is the number of features.
-        w: shape=(D, ). The vector of model parameters.
+        initial_w: shape=(D, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of SGD
+        gamma: a scalar denoting the stepsize
 
     Returns:
-        An array of shape (D, ) (same shape as w), containing the stochastic gradient of the loss at w.
+        w: a numpy array of shape (D, ) containing the model parameters obtained by the last iteration of SGD
+        loss: a float containing the loss value (scalar) associated to w
     """
     ws = [initial_w]
     losses = []
@@ -79,7 +81,6 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
 
 def least_squares(y, tx):
     """Calculate the least squares solution.
-       returns mse, and optimal weights.
 
     Args:
         y: numpy array of shape (N,), N is the number of samples.
@@ -87,7 +88,7 @@ def least_squares(y, tx):
 
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
-        mse: scalar.
+        loss: a float containing the loss value (scalar) associated to w
     """
     A = tx.T.dot(tx)
     b = tx.T.dot(y)
@@ -105,8 +106,8 @@ def ridge_regression(y, tx, lambda_):
         lambda_: scalar.
 
     Returns:
-        w: optimal weights, numpy array of shape(D,), D is the number of features.
-        mse: scalar.
+        w: a numpy array of shape (D, ) containing the model parameters
+        loss: a float containing the loss value (scalar) associated to w
     """
     aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     A = tx.T.dot(tx) + aI
@@ -127,9 +128,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         gamma: a scalar denoting the stepsize
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters
-            as numpy arrays of shape (D, ), for each iteration of GD
+        w: a numpy array of shape (D, ) containing the model parameters
+        loss: a float containing the loss value (scalar) for the last iteration of GD
     """
     step_function = logistic_regression_GD_step
     # Define parameters to store w and loss
@@ -164,9 +164,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         gamma: a scalar denoting the stepsize
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters
-            as numpy arrays of shape (D, ), for each iteration of GD
+        w: a numpy array of shape (D, ) containing the model parameters
+        loss: a float containing the loss value (scalar) for the last iteration of GD
     """
     step_function = logistic_regression_GD_step
     # Define parameters to store w and loss
