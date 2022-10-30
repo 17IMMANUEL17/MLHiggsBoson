@@ -63,9 +63,6 @@ def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
     """
     initial_w.shape = (initial_w.shape[0], 1)
     y.shape = (y.shape[0], 1)
-    print("initial_w", initial_w.shape)
-    print("y", y.shape)
-    print("tx", tx.shape)
     bfgs = BFGS(initial_w.shape[0], 0.8, 0.05)
     step_function = bfgs.step
     # Define parameters to store w and loss
