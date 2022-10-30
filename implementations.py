@@ -48,7 +48,9 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     Args:
         y: numpy array of shape (N,), N is the number of samples.
         tx: numpy array of shape (N,D), D is the number of features.
-        w: shape=(D, ). The vector of model parameters.
+        initial_w: shape=(D, ). The initial guess (or the initialization) for the model parameters
+        max_iters: a scalar denoting the total number of iterations of SGD
+        gamma: a scalar denoting the stepsize
 
     Returns:
         w: a numpy array of shape (D, ) containing the model parameters obtained by the last iteration of SGD
@@ -126,8 +128,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         gamma: a scalar denoting the stepsize
 
     Returns:
-        loss: a float containing the loss value (scalar) for the last iteration of GD
         w: a numpy array of shape (D, ) containing the model parameters
+        loss: a float containing the loss value (scalar) for the last iteration of GD
     """
     step_function = logistic_regression_GD_step
     # Define parameters to store w and loss
