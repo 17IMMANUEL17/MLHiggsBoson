@@ -63,6 +63,7 @@ def run_training(cfg, train_data, test_data, num_folds=5):
                     # apply the polynomial feature extension
                     polynomial_degree = int(hyperparams[i, -1])
                     if cfg.polynomial_features:
+                        # last 3 columns are categorical features and one-hot encoded
                         x_train = np.concatenate(
                             (build_poly(x_train[:, :-3], polynomial_degree), x_train[:, -3:]), 
                             axis=1
