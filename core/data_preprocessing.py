@@ -98,7 +98,7 @@ def log_transform(data, columns):
 
 def remove_outliers(data, columns):
     """Remove outliers from the data using the interquartile range method"""
-    right, left = np.percentile(data[:, columns], [90, 10], axis=0)
+    right, left = np.percentile(data[:, columns], [95, 5], axis=0)
     iqr = right - left
     min_value = left - 1.5 * iqr
     max_value = right + 1.5 * iqr
@@ -126,17 +126,6 @@ def preprocess_data(cfg, train_data, test_data):
     train_data["x_train"] = mean_imputer.fit_transform(train_data["x_train"])
     test_data["x_test"] = mean_imputer.transform(test_data["x_test"])
 
-    # remove outliers
-    outlier_cols = np.array([0, 1, 2, 3, 5, 8, 10, 13, 16, 19, 21, 23, 26, 29])
-    mask = remove_outliers(train_data["x_train"], outlier_cols)
-    train_data["x_train"] = train_data["x_train"][mask]
-    train_data["y_train"] = train_data["y_train"][mask]
-
-    # log transform
-    log_cols = np.array([0, 1, 2, 3, 5, 8, 10, 13, 16, 19, 21, 23, 26, 29])
-    train_data["x_train"] = log_transform(train_data["x_train"], log_cols)
-    test_data["x_test"] = log_transform(test_data["x_test"], log_cols)
-
     # one hot encode categorical features
     column = 22
     mask = train_data["x_train"][:, column] > 1
@@ -146,7 +135,16 @@ def preprocess_data(cfg, train_data, test_data):
     test_data["x_test"] = one_hot_encode(test_data["x_test"], column)
 
     # cols 0 to 28 are continous, 29 to 31 are categorical
-    cont_columns = np.arange(29)
+    cont_columns = np.arange(train_data["x_train"].shape[1] - 3)
+
+    # remove outliers
+    mask = remove_outliers(train_data["x_train"], cont_columns)
+    train_data["x_train"] = train_data["x_train"][mask]
+    train_data["y_train"] = train_data["y_train"][mask]
+
+    # log transform
+    train_data["x_train"] = log_transform(train_data["x_train"], cont_columns)
+    test_data["x_test"] = log_transform(test_data["x_test"], cont_columns)
 
     # normalize train/test data
     train_data["x_train"][:, cont_columns], mean_train, std_train = normalize_data(
