@@ -63,10 +63,18 @@ def run_training(cfg, train_data, test_data, num_folds=5):
                     # apply the polynomial feature extension
                     polynomial_degree = int(hyperparams[i, -1])
                     if cfg.polynomial_features:
-                        x_train = build_poly(x_train, polynomial_degree)
-                        x_val = build_poly(x_val, polynomial_degree)
-                        x_test = build_poly(x_test, polynomial_degree)
-
+                        x_train = np.concatenate(
+                            (build_poly(x_train[:, :-3], polynomial_degree), x_train[:, -3:]), 
+                            axis=1
+                        )
+                        x_val = np.concatenate(
+                            (build_poly(x_val[:, :-3], polynomial_degree), x_val[:, -3:]), 
+                            axis=1
+                        )
+                        x_test = np.concatenate(
+                            (build_poly(x_test[:, :-3], polynomial_degree), x_test[:, -3:]), 
+                            axis=1
+                        )
                     # initialize the weights
                     w_initial = np.zeros((x_train.shape[1]))
 
@@ -172,11 +180,11 @@ def choose_hyperparams(cfg):
         )
     else:
         logging.info(f"Default hyperparameters are used for the training!\n")
-        init_gamma = 0.01
+        init_gamma = 1
         final_gamma = 0.0001
         gamma_decay = 0.5
-        _lambda = 0.1
-        poly_degree = 2 if cfg.polynomial_features else 0
+        _lambda = 1e-4
+        poly_degree = 3 if cfg.polynomial_features else 0
         hyperparams = np.array(
             [[init_gamma, final_gamma, gamma_decay, _lambda, poly_degree]]
         )

@@ -37,6 +37,6 @@ def log_likelihood_loss(y_true, y_pred):
     # binary cross entropy
     y_true.shape = (y_true.shape[0], 1)
     y_pred.shape = (y_pred.shape[0], 1)
-    y_zero_loss = y_true * np.log(y_pred)
-    y_one_loss = (1 - y_true) * np.log(1 - y_pred)
+    y_zero_loss = y_true * np.log(y_pred + 1e-15)
+    y_one_loss = (1 - y_true) * np.log(1 - y_pred + 1e-15)
     return -np.sum(y_zero_loss + y_one_loss) / len(y_true)

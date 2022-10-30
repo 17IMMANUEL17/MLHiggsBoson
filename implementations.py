@@ -131,6 +131,8 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         w: a numpy array of shape (D, ) containing the model parameters
         loss: a float containing the loss value (scalar) for the last iteration of GD
     """
+    initial_w.shape = (initial_w.shape[0], 1)
+    y.shape = (y.shape[0], 1)
     step_function = logistic_regression_GD_step
     # Define parameters to store w and loss
     ws = [initial_w]
@@ -167,6 +169,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         w: a numpy array of shape (D, ) containing the model parameters
         loss: a float containing the loss value (scalar) for the last iteration of GD
     """
+    initial_w.shape = (initial_w.shape[0], 1)
+    y.shape = (y.shape[0], 1)
     step_function = logistic_regression_GD_step
     # Define parameters to store w and loss
     ws = [initial_w]

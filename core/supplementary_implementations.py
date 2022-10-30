@@ -21,7 +21,9 @@ def logistic_regression_bfgs(y, tx, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters
             as numpy arrays of shape (D, ), for each iteration of GD
     """
-    bfgs = BFGS(initial_w.shape[0], 0.5, 0.1)
+    initial_w.shape = (initial_w.shape[0], 1)
+    y.shape = (y.shape[0], 1)
+    bfgs = BFGS(initial_w.shape[0], 0.8, 0.05)
     step_function = bfgs.step
     # Define parameters to store w and loss
     ws = [initial_w]
@@ -59,7 +61,12 @@ def reg_logistic_regression_bfgs(y, tx, lambda_, initial_w, max_iters, gamma):
         ws: a list of length max_iters containing the model parameters
             as numpy arrays of shape (D, ), for each iteration of GD
     """
-    bfgs = BFGS(initial_w.shape[0], 0.5, 0.1)
+    initial_w.shape = (initial_w.shape[0], 1)
+    y.shape = (y.shape[0], 1)
+    print("initial_w", initial_w.shape)
+    print("y", y.shape)
+    print("tx", tx.shape)
+    bfgs = BFGS(initial_w.shape[0], 0.8, 0.05)
     step_function = bfgs.step
     # Define parameters to store w and loss
     ws = [initial_w]
@@ -207,8 +214,6 @@ class BFGS:
         """
         Compute the step size for p that satisfies the armijio condition.
         """
-        w = w.reshape(-1, 1)
-        y = y.reshape(-1, 1)
 
         y_pred = sigmoid(tx.dot(w))
         loss = log_likelihood_loss(y, y_pred)
